@@ -78,7 +78,7 @@ export default function LeaderboardList() {
 
   return (
     <div>
-      <Table dataSource={leaderboard} columns={columns} />;
+      <Table dataSource={leaderboard} columns={columns} />
     </div>
   );
 }

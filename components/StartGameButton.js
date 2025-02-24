@@ -1,40 +1,24 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
 
 export default function StartGameButton() {
-  const [players, setPlayers] = useState([]);
   const router = useRouter();
 
   const handleRedirect = () => {
     router.push("/match");
   };
 
-  const getPlayers = () => {
-    const storedPlayers = localStorage.getItem("players");
-    if (storedPlayers) {
-      try {
-        setPlayers(JSON.parse(storedPlayers));
-      } catch (error) {
-        setPlayers([]);
-      }
-    }
-  };
-
-  useEffect(() => {
-    getPlayers();
-  }, []);
-
   const generateGames = () => {
-    getPlayers();
+    const storedPlayers = localStorage.getItem("players");
+    const gamePlayers = storedPlayers ? JSON.parse(storedPlayers) : [];
 
-    if (players.length === 0) return;
+    if (gamePlayers.length === 0) return;
 
     let games = [];
 
-    players.forEach((player1) => {
-      players.forEach((player2) => {
+    gamePlayers.forEach((player1) => {
+      gamePlayers.forEach((player2) => {
         if (player1.name !== player2.name) {
           const game = {
             player1Name: player1.name,
