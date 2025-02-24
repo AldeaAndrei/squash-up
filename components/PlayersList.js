@@ -69,10 +69,16 @@ export default function PlayersList() {
           placeholder="Nume jucator..."
         />
         <button
-          className="bg-green-500 p-1 w-32 rounded-xl border-green-800 border-2"
-          onClick={() => handleSubmit()}
+          className="hidden lg:block bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 border border-blue-700 rounded"
+          onClick={handleSubmit}
         >
           Adauga
+        </button>
+        <button
+          className="block lg:hidden bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 border border-blue-700 rounded"
+          onClick={handleSubmit}
+        >
+          +
         </button>
       </div>
       <ul className="overflow-scroll-y">

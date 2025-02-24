@@ -25,7 +25,7 @@ export default function GameListElement({ game, setScores, index }) {
     <li
       className={`${
         index % 2 === 0 ? "bg-gray-100" : "bg-gray-200"
-      } justify-between px-2 py-1 items-center rounded-xl`}
+      } justify-between px-2 py-1 items-center rounded-xl max-w-80`}
     >
       <div className=" justify-center items-center flex-1 gap-3">
         <div className="flex items-center justify-between px-10">

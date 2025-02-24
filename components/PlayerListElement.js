@@ -8,7 +8,7 @@ export default function PlayersListElement({
     <li
       className={`flex ${
         index % 2 === 0 ? "bg-gray-100" : "bg-gray-200"
-      } justify-between px-2 h-10 items-center`}
+      } justify-between px-2 h-10 items-center max-w-80`}
     >
       <div>{playerName}</div>
       <button
