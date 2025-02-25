@@ -74,7 +74,7 @@ export default function GameListElement({ game, setScores }) {
             onKeyDown={handleKeyPress}
             className={`${
               parseInt(inputValue1) === 0 ? "text-[#e7e8e9]" : inputValue1Color
-            } text-center bg-transparent pl-10 p-1 rounded-lg focus:outline-none focus:underline w-14 flex justify-center items-center`}
+            } text-center bg-transparent px-2 py-1 rounded-lg focus:outline-none focus:underline w-14 flex justify-center items-center`}
           />
         </div>
         <div className="flex justify-center items-center">
@@ -92,7 +92,7 @@ export default function GameListElement({ game, setScores }) {
             onKeyDown={handleKeyPress}
             className={`${
               parseInt(inputValue2) === 0 ? "text-[#e7e8e9]" : inputValue2Color
-            } text-center bg-transparent pl-10 p-1 rounded-lg focus:outline-none focus:underline w-14 flex justify-center items-center`}
+            } text-center bg-transparent px-2 py-1 rounded-lg focus:outline-none focus:underline w-14 flex justify-center items-center`}
           />
         </div>
       </div>
