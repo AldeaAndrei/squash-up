@@ -36,14 +36,12 @@ export default function GameList() {
   };
 
   return (
-    <div>
-      <ul className="overflow-scroll-y flex flex-col gap-2">
-        {games.map((game, index) => {
-          return (
-            <GameListElement key={index} game={game} setScores={setScores} />
-          );
-        })}
-      </ul>
-    </div>
+    <ul className="overflow-scroll-y flex flex-col gap-2 justify-center items-center">
+      {games.map((game, index) => {
+        return (
+          <GameListElement key={index} game={game} setScores={setScores} />
+        );
+      })}
+    </ul>
   );
 }

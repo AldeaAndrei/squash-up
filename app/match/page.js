@@ -5,7 +5,7 @@ export default function MatchPage() {
   return (
     <div className="p-2">
       <section className="my-5">
-        <div className="flex gap-2">
+        <div className="flex gap-2 justify-center items-center">
           <NavigationButton path="/leaderboard" text="Clasament" />
           <NavigationButton path="/start" text="Reseteaza Joc" />
         </div>

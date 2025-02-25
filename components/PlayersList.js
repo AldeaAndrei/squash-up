@@ -69,19 +69,19 @@ export default function PlayersList() {
           placeholder="Nume jucator..."
         />
         <button
-          className="hidden lg:block bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 border border-blue-700 rounded"
+          className="hidden lg:block bg-[#131313] hover:bg-[#1d1f1e] font-bold py-2 px-4 border border-[#292929] rounded"
           onClick={handleSubmit}
         >
           Adauga
         </button>
         <button
-          className="block lg:hidden bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 border border-blue-700 rounded"
+          className="block lg:hidden bg-[#131313] hover:bg-[#1d1f1e] font-bold py-2 px-4 border border-[#292929] rounded"
           onClick={handleSubmit}
         >
           +
         </button>
       </div>
-      <ul className="overflow-scroll-y">
+      <ul className="overflow-scroll-y flex flex-col gap-2">
         {players.map((player, index) => {
           return (
             <PlayersListElement

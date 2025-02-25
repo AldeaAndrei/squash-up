@@ -1,15 +1,35 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
-export default function GameListElement({ game, setScores, index }) {
+export default function GameListElement({ game, setScores }) {
   const [inputValue1, setInputValue1] = useState(game.player1Score);
   const [inputValue2, setInputValue2] = useState(game.player2Score);
+  const prevValues = useRef({ inputValue1, inputValue2 });
+
+  const validatedScore = (val) => {
+    let score = parseInt(val, 10);
+    if (isNaN(score)) return 0;
+    return Math.max(0, Math.min(25, score));
+  };
 
   const handleSubmit = () => {
-    if (!isNaN(inputValue1)) setInputValue1(inputValue1);
-    if (!isNaN(inputValue2)) setInputValue2(inputValue2);
+    const newScore1 = validatedScore(inputValue1);
+    const newScore2 = validatedScore(inputValue2);
 
-    setScores(game.player1Name, inputValue1, game.player2Name, inputValue2);
+    setInputValue1(newScore1);
+    setInputValue2(newScore2);
+
+    setScores(game.player1Name, newScore1, game.player2Name, newScore2);
   };
+
+  useEffect(() => {
+    const prevScore1 = prevValues.current.inputValue1;
+    const prevScore2 = prevValues.current.inputValue2;
+
+    if (prevScore1 !== inputValue1 || prevScore2 !== inputValue2) {
+      handleSubmit();
+      prevValues.current = { inputValue1, inputValue2 };
+    }
+  }, [inputValue1, inputValue2]);
 
   const handleKeyPress = (event) => {
     if (event.key === "Enter") {
@@ -18,15 +38,17 @@ export default function GameListElement({ game, setScores, index }) {
   };
 
   useEffect(() => {
-    handleSubmit();
+    if (
+      prevValues.current.inputValue1 !== inputValue1 ||
+      prevValues.current.inputValue2 !== inputValue2
+    ) {
+      handleSubmit();
+      prevValues.current = { inputValue1, inputValue2 };
+    }
   }, [inputValue1, inputValue2]);
 
   return (
-    <li
-      className={`${
-        index % 2 === 0 ? "bg-gray-100" : "bg-gray-200"
-      } justify-between px-2 py-1 items-center rounded-xl max-w-80`}
-    >
+    <li className="bg-[#1e2021] justify-between px-2 py-1 items-center rounded-xl w-80">
       <div className=" justify-center items-center flex-1 gap-3">
         <div className="flex items-center justify-between px-10">
           <div>{game.player1Name}</div>
@@ -34,9 +56,17 @@ export default function GameListElement({ game, setScores, index }) {
             type="number"
             value={inputValue1}
             onChange={(e) => setInputValue1(e.target.value)}
-            onKeyDown={handleKeyPress} // Calls function when Enter is pressed
-            className="border border-gray-300 p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-14 flex justify-center items-center"
+            onKeyDown={handleKeyPress}
+            className={`${
+              parseInt(inputValue1) === 0 ? "text-[#e7e8e9]" : "text-[#84c542]"
+            } text-center bg-transparent p-1 rounded-lg focus:outline-none focus:underline w-14 flex justify-center items-center`}
           />
+        </div>
+        <div className="flex justify-center items-center">
+          <div className="text-center align-middle mr-3 text-gray-500 text-xs">
+            vs
+          </div>
+          <div className="bg-[#2a2d2e] w-[75%] mr-10 h-1 rounded-full" />
         </div>
         <div className="flex items-center justify-between px-10">
           <div>{game.player2Name}</div>
@@ -44,8 +74,10 @@ export default function GameListElement({ game, setScores, index }) {
             type="number"
             value={inputValue2}
             onChange={(e) => setInputValue2(e.target.value)}
-            onKeyDown={handleKeyPress} // Calls function when Enter is pressed
-            className="border border-gray-300 p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-14 flex justify-center items-center"
+            onKeyDown={handleKeyPress}
+            className={`${
+              parseInt(inputValue2) === 0 ? "text-[#e7e8e9]" : "text-[#84c542]"
+            } text-center bg-transparent p-1 rounded-lg focus:outline-none focus:underline w-14 flex justify-center items-center`}
           />
         </div>
       </div>

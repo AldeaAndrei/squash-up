@@ -1,11 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Table } from "antd";
 
 export default function LeaderboardList() {
-  const header = ["Jucator", "Total", "Castigate"];
-
   const [games, setGames] = useState([]);
   const [players, setPlayers] = useState([]);
 
@@ -55,30 +52,60 @@ export default function LeaderboardList() {
       newLeaderboard.push({ player: player.name, total: total, wins: wins });
     });
 
+    newLeaderboard.sort((a, b) => b.wins - a.wins);
+
     setLeaderboard(newLeaderboard);
   }, [players, games]);
 
-  const columns = [
-    {
-      title: "Jucator",
-      dataIndex: "player",
-      key: "player",
-    },
-    {
-      title: "Total",
-      dataIndex: "total",
-      key: "total",
-    },
-    {
-      title: "Castigate",
-      dataIndex: "wins",
-      key: "wins",
-    },
-  ];
+  const indexSize = (index) => {
+    if (index === 0) return "text-[26px] font-bold";
+    if (index === 1) return "text-[24px] font-bold";
+    if (index === 2) return "text-[22px] font-bold";
+    return "text-[18px]";
+  };
+
+  const indexColor = (index) => {
+    if (index === 0) return "text-[#feda15]";
+    if (index === 1) return "text-[#a7b1c9]";
+    if (index === 2) return "text-[#d89142]";
+    return "";
+  };
+
+  const indexBg = (index) => {
+    if (index === 0) return "bg-gradient-to-r from-[#feda15] to-transparent";
+    if (index === 1) return "bg-gradient-to-r from-[#a7b1c9] to-transparent";
+    if (index === 2) return "bg-gradient-to-r from-[#d89142] to-transparent";
+    return "";
+  };
 
   return (
-    <div>
-      <Table dataSource={leaderboard} columns={columns} />
-    </div>
+    <ul className="flex flex-col gap-3">
+      {leaderboard.map((row, index) => {
+        return (
+          <li
+            key={index}
+            className="flex flex-row justify-evenly bg-[#1e2021] h-16"
+          >
+            <div className={`flex-[0.3] ${indexBg(index)}`} />
+            <div className="flex-[1] flex justify-center items-center">
+              <span className={`${indexSize(index)} ${indexColor(index)}`}>
+                {index + 1}
+              </span>
+            </div>
+            <div className="flex-[3] flex justify-start items-center">
+              {row.player}
+            </div>
+            <div className="flex-[1] flex justify-end pr-2 items-center">
+              <span className="text-gray-500 text-xs mr-1">Total</span>{" "}
+              {row.total}
+            </div>
+            <div className="flex-[1] flex justify-end pr-2 items-center">
+              <span className="text-gray-500 text-xs mr-1">Meciuri</span>{" "}
+              {row.wins}
+            </div>
+          </li>
+        );
+      })}
+    </ul>
   );
 }
