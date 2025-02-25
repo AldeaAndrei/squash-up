@@ -3,6 +3,12 @@ import { useEffect, useRef, useState } from "react";
 export default function GameListElement({ game, setScores }) {
   const [inputValue1, setInputValue1] = useState(game.player1Score);
   const [inputValue2, setInputValue2] = useState(game.player2Score);
+  const [inputValue1Color, setInputValue1Color] = useState(
+    game.player1Score > game.player2Score ? "text-[#84c542]" : "text-[#c54242]"
+  );
+  const [inputValue2Color, setInputValue2Color] = useState(
+    game.player2Score > game.player1Score ? "text-[#84c542]" : "text-[#c54242]"
+  );
   const prevValues = useRef({ inputValue1, inputValue2 });
 
   const validatedScore = (val) => {
@@ -14,6 +20,15 @@ export default function GameListElement({ game, setScores }) {
   const handleSubmit = () => {
     const newScore1 = validatedScore(inputValue1);
     const newScore2 = validatedScore(inputValue2);
+
+    setInputValue1Color(
+      newScore1 > newScore2 ? "text-[#84c542]" : "text-[#c54242]"
+    );
+    setInputValue2Color(
+      newScore2 > newScore1 ? "text-[#84c542]" : "text-[#c54242]"
+    );
+
+    console.log(newScore1, newScore2);
 
     setInputValue1(newScore1);
     setInputValue2(newScore2);
@@ -58,7 +73,7 @@ export default function GameListElement({ game, setScores }) {
             onChange={(e) => setInputValue1(e.target.value)}
             onKeyDown={handleKeyPress}
             className={`${
-              parseInt(inputValue1) === 0 ? "text-[#e7e8e9]" : "text-[#84c542]"
+              parseInt(inputValue1) === 0 ? "text-[#e7e8e9]" : inputValue1Color
             } text-center bg-transparent p-1 rounded-lg focus:outline-none focus:underline w-14 flex justify-center items-center`}
           />
         </div>
@@ -76,7 +91,7 @@ export default function GameListElement({ game, setScores }) {
             onChange={(e) => setInputValue2(e.target.value)}
             onKeyDown={handleKeyPress}
             className={`${
-              parseInt(inputValue2) === 0 ? "text-[#e7e8e9]" : "text-[#84c542]"
+              parseInt(inputValue2) === 0 ? "text-[#e7e8e9]" : inputValue2Color
             } text-center bg-transparent p-1 rounded-lg focus:outline-none focus:underline w-14 flex justify-center items-center`}
           />
         </div>
