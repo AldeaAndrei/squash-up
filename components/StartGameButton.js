@@ -16,18 +16,27 @@ export default function StartGameButton() {
     if (gamePlayers.length === 0) return;
 
     let games = [];
+    let pairs = {};
 
     gamePlayers.forEach((player1) => {
       gamePlayers.forEach((player2) => {
-        if (player1.name !== player2.name) {
-          const game = {
-            player1Name: player1.name,
-            player2Name: player2.name,
-            player1Score: 0,
-            player2Score: 0,
-          };
+        const pairKey = `${player1.name}-${player2.name}`;
+        const reversePairKey = `${player2.name}-${player1.name}`;
 
-          games.push(game);
+        if (player1.name !== player2.name) {
+          if (!pairs[pairKey] && !pairs[reversePairKey]) {
+            const game = {
+              player1Name: player1.name,
+              player2Name: player2.name,
+              player1Score: 0,
+              player2Score: 0,
+            };
+
+            pairs[pairKey] = true;
+            pairs[reversePairKey] = true;
+
+            games.push(game);
+          }
         }
       });
     });
