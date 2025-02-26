@@ -2,11 +2,19 @@
 
 import { useRouter } from "next/navigation";
 
-export default function NavigationButton({ path, children }) {
+import LeaderboardIcon from "@mui/icons-material/Leaderboard";
+import CachedIcon from "@mui/icons-material/Cached";
+
+export default function NavigationButton({ path, text }) {
   const router = useRouter();
 
   const handleRedirect = () => {
     router.push(path);
+  };
+
+  const selectIcon = () => {
+    if (path === "/leaderboard") return <LeaderboardIcon />;
+    if (path === "/start") return <CachedIcon />;
   };
 
   return (
@@ -15,7 +23,8 @@ export default function NavigationButton({ path, children }) {
       onClick={() => handleRedirect()}
     >
       <div className="flex flex-row justify-center items-center">
-        {children ?? path}
+        {selectIcon()}
+        {text && <span className="ml-1">{text}</span>}
       </div>
     </button>
   );
