@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 
 import LeaderboardIcon from "@mui/icons-material/Leaderboard";
 import CachedIcon from "@mui/icons-material/Cached";
+import ScoreboardIcon from "@mui/icons-material/Scoreboard";
 
 export default function NavigationButton({ path, text }) {
   const router = useRouter();
@@ -15,6 +16,7 @@ export default function NavigationButton({ path, text }) {
   const selectIcon = () => {
     if (path === "/leaderboard") return <LeaderboardIcon />;
     if (path === "/start") return <CachedIcon />;
+    if (path === "/match") return <ScoreboardIcon />;
   };
 
   return (
