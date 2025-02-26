@@ -39,14 +39,16 @@ export default function LeaderboardList() {
       let total = 0;
 
       games.forEach((game) => {
-        if (game.player1Name == player.name) {
-          wins += game.player1Score > game.player2Score ? 1 : 0;
-          total += parseInt(game.player1Score);
-        }
-        if (game.player2Name == player.name) {
-          wins += game.player2Score > game.player1Score ? 1 : 0;
-          total += parseInt(game.player2Score);
-        }
+        game.matches.forEach((match) => {
+          if (match.player1Name == player.name) {
+            wins += match.player1Score > match.player2Score ? 1 : 0;
+            total += parseInt(match.player1Score);
+          }
+          if (match.player2Name == player.name) {
+            wins += match.player2Score > match.player1Score ? 1 : 0;
+            total += parseInt(match.player2Score);
+          }
+        });
       });
 
       newLeaderboard.push({ player: player.name, total: total, wins: wins });

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import PlayersListElement from "./PlayerListElement";
+import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 
 export default function PlayersList() {
   const [players, setPlayers] = useState([]);
@@ -78,7 +79,7 @@ export default function PlayersList() {
           className="block lg:hidden bg-[#131313] hover:bg-[#1d1f1e] font-bold py-2 px-4 border border-[#292929] rounded"
           onClick={() => handleSubmit()}
         >
-          +
+          <AddCircleOutlineIcon />
         </button>
       </div>
       <ul className="overflow-scroll-y flex flex-col gap-2">

@@ -1,13 +1,17 @@
 import { useEffect, useRef, useState } from "react";
 
-export default function GameListElement({ game, setScores }) {
-  const [inputValue1, setInputValue1] = useState(game.player1Score);
-  const [inputValue2, setInputValue2] = useState(game.player2Score);
+export default function matchListElement({ match, setScores, round }) {
+  const [inputValue1, setInputValue1] = useState(match.player1Score);
+  const [inputValue2, setInputValue2] = useState(match.player2Score);
   const [inputValue1Color, setInputValue1Color] = useState(
-    game.player1Score > game.player2Score ? "text-[#84c542]" : "text-[#c54242]"
+    match.player1Score > match.player2Score
+      ? "text-[#84c542]"
+      : "text-[#c54242]"
   );
   const [inputValue2Color, setInputValue2Color] = useState(
-    game.player2Score > game.player1Score ? "text-[#84c542]" : "text-[#c54242]"
+    match.player2Score > match.player1Score
+      ? "text-[#84c542]"
+      : "text-[#c54242]"
   );
   const prevValues = useRef({ inputValue1, inputValue2 });
 
@@ -28,12 +32,16 @@ export default function GameListElement({ game, setScores }) {
       newScore2 > newScore1 ? "text-[#84c542]" : "text-[#c54242]"
     );
 
-    console.log(newScore1, newScore2);
-
     setInputValue1(newScore1);
     setInputValue2(newScore2);
 
-    setScores(game.player1Name, newScore1, game.player2Name, newScore2);
+    setScores(
+      match.player1Name,
+      newScore1,
+      match.player2Name,
+      newScore2,
+      round
+    );
   };
 
   useEffect(() => {
@@ -66,7 +74,7 @@ export default function GameListElement({ game, setScores }) {
     <li className="bg-[#1e2021] justify-between px-2 py-1 items-center rounded-xl w-80">
       <div className=" justify-center items-center flex-1 gap-3">
         <div className="flex items-center justify-between px-10">
-          <div>{game.player1Name}</div>
+          <div>{match.player1Name}</div>
           <input
             type="number"
             value={inputValue1}
@@ -84,7 +92,7 @@ export default function GameListElement({ game, setScores }) {
           <div className="bg-[#2a2d2e] w-[80%] mr-3 h-1 rounded-full" />
         </div>
         <div className="flex items-center justify-between px-10">
-          <div>{game.player2Name}</div>
+          <div>{match.player2Name}</div>
           <input
             type="number"
             value={inputValue2}
