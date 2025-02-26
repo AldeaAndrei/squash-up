@@ -1,3 +1,4 @@
+import DownloadSection from "@/components/DownloadSection";
 import LeaderboardList from "@/components/LeaderboardList";
 import NavigationButton from "@/components/NavigationButton";
 
@@ -6,6 +7,7 @@ export default function LeaderboardPage() {
     <div className="p-2">
       <section className="my-5">
         <NavigationButton path="/match" text="Scoruri" />
+        <DownloadSection />
       </section>
       <section className="flex flex-col gap-2">
         <LeaderboardList />
