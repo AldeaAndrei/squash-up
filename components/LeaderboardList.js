@@ -54,7 +54,7 @@ export default function LeaderboardList() {
       newLeaderboard.push({ player: player.name, total: total, wins: wins });
     });
 
-    newLeaderboard.sort((a, b) => b.wins - a.wins);
+    newLeaderboard.sort((a, b) => b.wins - a.wins || b.total - a.total);
 
     setLeaderboard(newLeaderboard);
   }, [players, games]);
