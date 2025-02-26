@@ -57,7 +57,7 @@ export default function PlayersList() {
 
   return (
     <div>
-      <div className="flex gap-4 mb-2">
+      <div className="flex justify-between max-w-80 gap-4 mb-2">
         <input
           type="text"
           value={inputValue}
@@ -70,13 +70,13 @@ export default function PlayersList() {
         />
         <button
           className="hidden lg:block bg-[#131313] hover:bg-[#1d1f1e] font-bold py-2 px-4 border border-[#292929] rounded"
-          onClick={handleSubmit}
+          onClick={() => handleSubmit()}
         >
           Adauga
         </button>
         <button
           className="block lg:hidden bg-[#131313] hover:bg-[#1d1f1e] font-bold py-2 px-4 border border-[#292929] rounded"
-          onClick={handleSubmit}
+          onClick={() => handleSubmit()}
         >
           +
         </button>
