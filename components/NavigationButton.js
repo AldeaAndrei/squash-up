@@ -6,7 +6,7 @@ import LeaderboardIcon from "@mui/icons-material/Leaderboard";
 import CachedIcon from "@mui/icons-material/Cached";
 import ScoreboardIcon from "@mui/icons-material/Scoreboard";
 
-export default function NavigationButton({ path, text }) {
+export default function NavigationButton({ path, text, noIcon }) {
   const router = useRouter();
 
   const handleRedirect = () => {
@@ -25,7 +25,7 @@ export default function NavigationButton({ path, text }) {
       onClick={() => handleRedirect()}
     >
       <div className="flex flex-row justify-center items-center">
-        {selectIcon()}
+        {!noIcon && selectIcon()}
         {text && <span className="ml-1">{text}</span>}
       </div>
     </button>
