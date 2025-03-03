@@ -150,40 +150,5 @@ export default function gameListElement({ match, setScores, round }) {
         </div>
       )}
     </li>
-
-    // <li className="bg-[#1e2021] justify-between px-2 py-1 items-center rounded-xl w-80">
-    //   <div className=" justify-center items-center flex-1 gap-3">
-    //     <div className="flex items-center justify-between px-10">
-    //       <div>{match.player1Name}</div>
-    //       <input
-    //         type="number"
-    //         value={inputValue1}
-    //         onChange={(e) => setInputValue1(e.target.value)}
-    //         onKeyDown={handleKeyPress}
-    //         className={`${
-    //           parseInt(inputValue1) === 0 ? "text-[#e7e8e9]" : inputValue1Color
-    //         } text-center bg-transparent px-2 py-1 rounded-lg focus:outline-none focus:underline w-14 flex justify-center items-center`}
-    //       />
-    //     </div>
-    //     <div className="flex justify-center items-center">
-    //       <div className="text-center align-middle mr-3 text-gray-500 text-xs">
-    //         vs
-    //       </div>
-    //       <div className="bg-[#2a2d2e] w-[80%] mr-3 h-1 rounded-full" />
-    //     </div>
-    //     <div className="flex items-center justify-between px-10">
-    //       <div>{match.player2Name}</div>
-    //       <input
-    //         type="number"
-    //         value={inputValue2}
-    //         onChange={(e) => setInputValue2(e.target.value)}
-    //         onKeyDown={handleKeyPress}
-    //         className={`${
-    //           parseInt(inputValue2) === 0 ? "text-[#e7e8e9]" : inputValue2Color
-    //         } text-center bg-transparent px-2 py-1 rounded-lg focus:outline-none focus:underline w-14 flex justify-center items-center`}
-    //       />
-    //     </div>
-    //   </div>
-    // </li>
   );
 }
