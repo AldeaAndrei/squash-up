@@ -23,21 +23,6 @@ export default function gameListElement({ match, setScores, round }) {
     "text-gray-400",
   ]);
 
-  const player1InputsRefs = useRef(
-    Array.from({ length: 3 }, () => React.createRef())
-  );
-  const player2InputsRefs = useRef(
-    Array.from({ length: 3 }, () => React.createRef())
-  );
-
-  const setFocus = (playerIndex, inputIndex) => {
-    if (playerIndex === 1) {
-      player1InputsRefs.current[inputIndex]?.current?.focus();
-    } else if (playerIndex === 2) {
-      player2InputsRefs.current[inputIndex]?.current?.focus();
-    }
-  };
-
   const validatedScore = (val) => {
     let score = parseInt(val, 10);
     if (isNaN(score)) return 0;
@@ -90,8 +75,10 @@ export default function gameListElement({ match, setScores, round }) {
       })
       .reduce((acc, num) => acc + num, 0);
 
-    if (p1Wins > p2Wins && p1Wins >= 2) setWinner(1);
-    else if (p2Wins > p1Wins && p2Wins >= 2) setWinner(2);
+    if (p1Wins > p2Wins && p1Wins >= Math.ceil(match.rounds.length / 2))
+      setWinner(1);
+    else if (p2Wins > p1Wins && p2Wins >= Math.ceil(match.rounds.length / 2))
+      setWinner(2);
     else setWinner(null);
 
     setScores(
@@ -109,7 +96,7 @@ export default function gameListElement({ match, setScores, round }) {
         <div className="flex-col text-center flex-1 max-h-12 overflow-y-scroll scrollbar-hide">
           {match.player1Name}
           <span className="mx-2" />
-          {winner === 1 && <WinnerIcon />}
+          {winner === 1 && <WinnerIcon sx={{ color: yellow[500] }} />}
         </div>
         <div className="flex-col text-center flex-1 max-h-12 overflow-y-scroll scrollbar-hide">
           {match.player2Name}
@@ -123,13 +110,14 @@ export default function gameListElement({ match, setScores, round }) {
           <div className="flex-col justify-center items-center">
             {player1Values.map((value, index) => {
               return (
-                <input
+                <textarea
                   key={`${index}-player1`}
                   type="number"
                   value={value}
-                  onClick={() => setFocus(1, index)}
+                  placeholder="0"
+                  onClick={(e) => e.target.select()}
                   onChange={(e) => setInputValues1(e.target.value, index)}
-                  className={`${player1Colors[index]} text-lg font-bold text-center bg-transparent px-2 py-1 rounded-lg focus:outline-none focus:underline w-14 flex justify-center items-center`}
+                  className={`${player1Colors[index]} text-lg font-bold text-center bg-transparent px-2 py-1 rounded-lg focus:outline-none focus:underline w-14 flex justify-center items-center resize-none h-8 overflow-hidden`}
                 />
               );
             })}
@@ -137,12 +125,14 @@ export default function gameListElement({ match, setScores, round }) {
           <div className="flex-col justify-center items-center">
             {player2Values.map((value, index) => {
               return (
-                <input
+                <textarea
                   key={`${index}-player2`}
                   type="number"
                   value={value}
+                  placeholder="0"
+                  onClick={(e) => e.target.select()}
                   onChange={(e) => setInputValues2(e.target.value, index)}
-                  className={`${player2Colors[index]} text-lg font-bold text-center bg-transparent px-2 py-1 rounded-lg focus:outline-none focus:underline w-14 flex justify-center items-center`}
+                  className={`${player2Colors[index]} text-lg font-bold text-center bg-transparent px-2 py-1 rounded-lg focus:outline-none focus:underline w-14 flex justify-center items-center resize-none h-8 overflow-hidden`}
                 />
               );
             })}
