@@ -2,6 +2,9 @@ export const generateGames = () => {
   const storedPlayers = localStorage.getItem("players");
   const gamePlayers = storedPlayers ? JSON.parse(storedPlayers) : [];
 
+  const storedGameType = localStorage.getItem("gameType");
+  const gameType = storedGameType ? JSON.parse(storedGameType) : 3;
+
   if (gamePlayers.length === 0) return;
 
   const storedGames = localStorage.getItem("games");
@@ -19,11 +22,15 @@ export const generateGames = () => {
 
       if (player1.name !== player2.name) {
         if (!pairs[pairKey] && !pairs[reversePairKey]) {
+          const rounds = Array.from({ length: gameType }, () => ({
+            player1Score: 0,
+            player2Score: 0,
+          }));
+
           const match = {
             player1Name: player1.name,
             player2Name: player2.name,
-            player1Score: 0,
-            player2Score: 0,
+            rounds,
           };
 
           pairs[pairKey] = true;
@@ -36,7 +43,7 @@ export const generateGames = () => {
   });
 
   const game = {
-    round: currentRounds,
+    game: currentRounds,
     matches: matches,
   };
 

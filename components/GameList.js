@@ -25,12 +25,23 @@ export default function GameList() {
 
   const setScores = (
     player1Name,
-    player1Score,
+    player1Scores,
     player2Name,
-    player2Score,
+    player2Scores,
     round
   ) => {
     if (!games) return;
+
+    const roundsLength = player1Scores.length;
+
+    const rounds = [];
+
+    for (let i = 0; i < roundsLength; i++) {
+      rounds.push({
+        player1Score: player1Scores[i],
+        player2Score: player2Scores[i],
+      });
+    }
 
     setGames((prevGames) =>
       prevGames.map((game) => {
@@ -43,8 +54,7 @@ export default function GameList() {
             match.player2Name === player2Name
               ? {
                   ...match,
-                  player1Score: player1Score,
-                  player2Score: player2Score,
+                  rounds,
                 }
               : match
           ),
@@ -63,12 +73,12 @@ export default function GameList() {
           >
             <div className="flex flex-row w-full justify-center items-center">
               <div className="flex-grow bg-white h-[1px] rounded-full" />
-              <div className="px-2">Runda {game.round + 1}</div>
+              <div className="px-2">Runda {game.game + 1}</div>
               <div className="flex-grow bg-white h-[1px] rounded-full" />
             </div>
             {game.matches.map((match, index) => {
               return (
-                <div key={index}>
+                <div key={`element-${index}`}>
                   <GameListElement
                     key={index}
                     match={match}

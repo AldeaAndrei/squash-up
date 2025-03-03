@@ -40,13 +40,33 @@ export default function LeaderboardList() {
 
       games.forEach((game) => {
         game.matches.forEach((match) => {
+          const p1Wins = match.rounds
+            .map((round) => {
+              return round.player1Score > round.player2Score ? 1 : 0;
+            })
+            .reduce((acc, num) => acc + num, 0);
+
+          const p2Wins = match.rounds
+            .map((round) => {
+              return round.player2Score > round.player1Score ? 1 : 0;
+            })
+            .reduce((acc, num) => acc + num, 0);
+
           if (match.player1Name == player.name) {
-            wins += match.player1Score > match.player2Score ? 1 : 0;
-            total += parseInt(match.player1Score);
+            wins += p1Wins > p2Wins ? 1 : 0;
+            total += parseInt(
+              match.rounds
+                .map((r) => r.player1Score)
+                .reduce((acc, num) => acc + num, 0)
+            );
           }
           if (match.player2Name == player.name) {
-            wins += match.player2Score > match.player1Score ? 1 : 0;
-            total += parseInt(match.player2Score);
+            wins += p2Wins > p1Wins ? 1 : 0;
+            total += parseInt(
+              match.rounds
+                .map((r) => r.player2Score)
+                .reduce((acc, num) => acc + num, 0)
+            );
           }
         });
       });
