@@ -45,7 +45,7 @@ export default function GameList() {
 
     setGames((prevGames) =>
       prevGames.map((game) => {
-        if (game.round !== round) return game;
+        if (game.game !== round) return game;
 
         return {
           ...game,
@@ -83,7 +83,7 @@ export default function GameList() {
                     key={index}
                     match={match}
                     setScores={setScores}
-                    round={game.round}
+                    round={game.game}
                   />
                 </div>
               );

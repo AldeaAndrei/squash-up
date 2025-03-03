@@ -45,6 +45,22 @@ export default function gameListElement({ match, setScores, round }) {
     setPlayer2Values(newValues);
   };
 
+  const calculateWinner = () => {
+    let winner1 = 0;
+    let winner2 = 0;
+
+    for (let i = 0; i < player1Values.length; i++) {
+      winner1 += player1Values[i] > player2Values[i] ? 1 : 0;
+      winner2 += player2Values[i] > player1Values[i] ? 1 : 0;
+    }
+
+    if (winner1 > winner2 && winner1 >= Math.ceil(match.rounds.length / 2))
+      setWinner(1);
+    else if (winner2 > winner1 && winner2 >= Math.ceil(match.rounds.length / 2))
+      setWinner(2);
+    else setWinner(null);
+  };
+
   useEffect(() => {
     if (player1Values == null || player2Values == null) return;
 
@@ -63,23 +79,7 @@ export default function gameListElement({ match, setScores, round }) {
     setPlayer1Colors(newColorsPlayer1);
     setPlayer2Colors(newColorsPlayer2);
 
-    const p1Wins = match.rounds
-      .map((round) => {
-        return round.player1Score > round.player2Score ? 1 : 0;
-      })
-      .reduce((acc, num) => acc + num, 0);
-
-    const p2Wins = match.rounds
-      .map((round) => {
-        return round.player2Score > round.player1Score ? 1 : 0;
-      })
-      .reduce((acc, num) => acc + num, 0);
-
-    if (p1Wins > p2Wins && p1Wins >= Math.ceil(match.rounds.length / 2))
-      setWinner(1);
-    else if (p2Wins > p1Wins && p2Wins >= Math.ceil(match.rounds.length / 2))
-      setWinner(2);
-    else setWinner(null);
+    calculateWinner();
 
     setScores(
       match.player1Name,
@@ -116,7 +116,9 @@ export default function gameListElement({ match, setScores, round }) {
                   value={value}
                   placeholder="0"
                   onClick={(e) => e.target.select()}
-                  onChange={(e) => setInputValues1(e.target.value, index)}
+                  onChange={(e) => {
+                    setInputValues1(e.target.value, index);
+                  }}
                   className={`${player1Colors[index]} text-lg font-bold text-center bg-transparent px-2 py-1 rounded-lg focus:outline-none focus:underline w-14 flex justify-center items-center resize-none h-8 overflow-hidden`}
                 />
               );
@@ -131,7 +133,9 @@ export default function gameListElement({ match, setScores, round }) {
                   value={value}
                   placeholder="0"
                   onClick={(e) => e.target.select()}
-                  onChange={(e) => setInputValues2(e.target.value, index)}
+                  onChange={(e) => {
+                    setInputValues2(e.target.value, index);
+                  }}
                   className={`${player2Colors[index]} text-lg font-bold text-center bg-transparent px-2 py-1 rounded-lg focus:outline-none focus:underline w-14 flex justify-center items-center resize-none h-8 overflow-hidden`}
                 />
               );
