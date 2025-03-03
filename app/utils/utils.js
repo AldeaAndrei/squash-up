@@ -42,6 +42,8 @@ export const generateGames = () => {
     });
   });
 
+  matches = matches.sort(() => Math.random() - 0.5);
+
   const game = {
     game: currentRounds,
     matches: matches,
