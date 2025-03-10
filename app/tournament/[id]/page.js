@@ -11,7 +11,7 @@ export default async function TournamentPage({ params }) {
       <section className="my-5">
         <div className="flex gap-2 justify-center items-center">
           <NavigationButton path={`/leaderboard/${id}`} text="" />
-          <AddRoundButton />
+          <AddRoundButton tournamentId={id} />
           <NewGameButton />
         </div>
       </section>
