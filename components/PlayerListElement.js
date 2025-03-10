@@ -1,8 +1,11 @@
+import AccountCircleIcon from "@mui/icons-material/AccountCircle";
+
 export default function PlayersListElement({
   playerName,
   playerId,
   removePlayer,
   index,
+  id,
 }) {
   return (
     <li
@@ -13,6 +16,7 @@ export default function PlayersListElement({
       <div className="flex gap-3">
         <div># {index + 1}</div>
         <div>{playerName}</div>
+        {id && <AccountCircleIcon />}
       </div>
       <button
         className="text-red-500 hover:text-red-600"

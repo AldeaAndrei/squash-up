@@ -14,9 +14,9 @@ export default function NavigationButton({ path, text, noIcon }) {
   };
 
   const selectIcon = () => {
-    if (path === "/leaderboard") return <LeaderboardIcon />;
-    if (path === "/start") return <CachedIcon />;
-    if (path === "/match") return <ScoreboardIcon />;
+    if (path.startsWith("/leaderboard")) return <LeaderboardIcon />;
+    if (path.startsWith("/start")) return <CachedIcon />;
+    if (path.startsWith("/tournament")) return <ScoreboardIcon />;
   };
 
   return (

@@ -6,13 +6,52 @@ import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 
 export default function PlayersList() {
   const [players, setPlayers] = useState([]);
+  const [foundPlayer, setFoundPlayer] = useState();
   const [inputValue, setInputValue] = useState("");
   const [isValidName, setIsValidName] = useState(true);
 
   const validName = (name) => {
-    const alreadyExists = players.map((player) => player.name).includes(name);
+    const alreadyExists = players
+      .map((player) => player.name.toLowerCase())
+      .includes(name.toLowerCase());
     return !alreadyExists;
   };
+
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      async function fetchPlayers() {
+        try {
+          const response = await fetch(
+            `/api/players?name=${encodeURIComponent(inputValue)}`,
+            {
+              method: "GET",
+              headers: {
+                "Content-Type": "application/json",
+              },
+            }
+          );
+
+          const players = await response.json();
+
+          let matchPlayer;
+          players.forEach((player) => {
+            if (player.name.toLowerCase() === inputValue.toLowerCase())
+              matchPlayer = player;
+          });
+
+          setFoundPlayer(matchPlayer);
+        } catch (error) {
+          console.error("Error fetching players:", error);
+        }
+      }
+
+      if (inputValue) {
+        fetchPlayers();
+      }
+    }, 250);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [inputValue]);
 
   useEffect(() => {
     const storedPlayers = localStorage.getItem("players");
@@ -34,8 +73,17 @@ export default function PlayersList() {
   const handleSubmit = () => {
     if (inputValue.length < 3 || !isValidName) return;
 
+    const newPlayer = {
+      id:
+        players.length > 0
+          ? Math.max(...players.map((player) => player.id)) + 1
+          : 0,
+      name: foundPlayer ? foundPlayer.name : inputValue,
+      database_id: foundPlayer ? foundPlayer.id : null,
+    };
+
     setInputValue("");
-    const newPlayer = { id: players.length, name: inputValue };
+    setFoundPlayer(null);
     setPlayers([newPlayer, ...players]);
   };
 
@@ -64,19 +112,25 @@ export default function PlayersList() {
           value={inputValue}
           onChange={(e) => handleChange(e)}
           onKeyDown={handleKeyPress} // Calls function when Enter is pressed
-          className={`border border-gray-300 p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-            isValidName ? "text-black" : "text-red-500"
+          className={`border border-gray-300 p-2 rounded-lg focus:outline-none font-semibold focus:ring-2 focus:ring-blue-500 ${
+            isValidName
+              ? foundPlayer
+                ? "text-green-700"
+                : "text-black"
+              : "text-red-500"
           }`}
           placeholder="Nume jucator..."
         />
         <button
-          className="hidden lg:block bg-[#131313] hover:bg-[#1d1f1e] font-bold py-2 px-4 border border-[#292929] rounded"
+          className="hidden lg:block bg-[#131313] hover:bg-[#1d1f1e] font-bold py-2 px-4 border border-[#292929] rounded disabled:bg-[#5c5c5c]"
+          disabled={inputValue.length < 1}
           onClick={() => handleSubmit()}
         >
           Adauga
         </button>
         <button
-          className="block lg:hidden bg-[#131313] hover:bg-[#1d1f1e] font-bold py-2 px-4 border border-[#292929] rounded"
+          className="block lg:hidden bg-[#131313] hover:bg-[#1d1f1e] font-bold py-2 px-4 border border-[#292929] rounded disabled:bg-[#5c5c5c]"
+          disabled={inputValue.length < 1}
           onClick={() => handleSubmit()}
         >
           <AddCircleOutlineIcon />
@@ -90,6 +144,7 @@ export default function PlayersList() {
               playerName={player.name}
               playerId={player.id}
               index={index}
+              id={player.database_id}
               removePlayer={removePlayer}
             />
           );

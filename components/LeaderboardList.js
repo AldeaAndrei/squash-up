@@ -2,82 +2,29 @@
 
 import { useState, useEffect } from "react";
 
-export default function LeaderboardList() {
-  const [games, setGames] = useState([]);
-  const [players, setPlayers] = useState([]);
-
+export default function LeaderboardList({ tournamentId }) {
   const [leaderboard, setLeaderboard] = useState([]);
 
   useEffect(() => {
-    const storedGames = localStorage.getItem("games");
-    const storedPlayers = localStorage.getItem("players");
-
-    if (storedGames) {
+    const fetchTournament = async () => {
       try {
-        setGames(JSON.parse(storedGames));
-      } catch (error) {
-        setGames([]);
-      }
-    }
+        const response = await fetch(
+          `/api/tournaments/${tournamentId}/leaderboard`
+        );
 
-    if (storedPlayers) {
-      try {
-        setPlayers(JSON.parse(storedPlayers));
+        if (response.ok) {
+          const data = await response.json();
+          setLeaderboard(data.leaderboard);
+        } else {
+          console.error("Failed to fetch tournament data");
+        }
       } catch (error) {
-        setPlayers([]);
+        console.error("Error fetching tournament data:", error);
       }
-    }
+    };
+
+    fetchTournament();
   }, []);
-
-  useEffect(() => {
-    if (!players || !games) return;
-
-    let newLeaderboard = [];
-
-    players.forEach((player) => {
-      let wins = 0;
-      let total = 0;
-
-      games.forEach((game) => {
-        game.matches.forEach((match) => {
-          const p1Wins = match.rounds
-            .map((round) => {
-              return round.player1Score > round.player2Score ? 1 : 0;
-            })
-            .reduce((acc, num) => acc + num, 0);
-
-          const p2Wins = match.rounds
-            .map((round) => {
-              return round.player2Score > round.player1Score ? 1 : 0;
-            })
-            .reduce((acc, num) => acc + num, 0);
-
-          if (match.player1Name == player.name) {
-            wins += p1Wins > p2Wins ? 1 : 0;
-            total += parseInt(
-              match.rounds
-                .map((r) => r.player1Score)
-                .reduce((acc, num) => acc + num, 0)
-            );
-          }
-          if (match.player2Name == player.name) {
-            wins += p2Wins > p1Wins ? 1 : 0;
-            total += parseInt(
-              match.rounds
-                .map((r) => r.player2Score)
-                .reduce((acc, num) => acc + num, 0)
-            );
-          }
-        });
-      });
-
-      newLeaderboard.push({ player: player.name, total: total, wins: wins });
-    });
-
-    newLeaderboard.sort((a, b) => b.wins - a.wins || b.total - a.total);
-
-    setLeaderboard(newLeaderboard);
-  }, [players, games]);
 
   const indexSize = (index) => {
     if (index === 0) return "text-[26px] font-bold";
@@ -115,7 +62,7 @@ export default function LeaderboardList() {
               </span>
             </div>
             <div className="flex-[3] flex justify-start items-center">
-              {row.player}
+              {row.name}
             </div>
             <div className="flex-[1] flex justify-end pr-2 items-center">
               <span className="text-gray-500 text-xs mr-1">Total</span>{" "}
@@ -123,7 +70,7 @@ export default function LeaderboardList() {
             </div>
             <div className="flex-[1] flex justify-end pr-2 items-center">
               <span className="text-gray-500 text-xs mr-1">Meciuri</span>{" "}
-              {row.wins}
+              {row.rounds}
             </div>
           </li>
         );

@@ -20,7 +20,7 @@ export default function SetGameTypeButton() {
     localStorage.setItem("gameType", JSON.stringify(type));
   }, [type]);
 
-  const pasreGameType = () => {
+  const parseGameType = () => {
     if (type === 1) return "1 Runda";
     if (type === 3) return "2/3 Runde";
   };
@@ -35,7 +35,7 @@ export default function SetGameTypeButton() {
       className="bg-[#131313] hover:bg-[#1d1f1e] font-bold py-2 px-4 border border-[#292929] rounded"
       onClick={() => changeGameType()}
     >
-      {pasreGameType()}
+      {parseGameType()}
     </button>
   );
 }

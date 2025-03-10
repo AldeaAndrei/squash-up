@@ -2,9 +2,63 @@
 
 import { useEffect, useState } from "react";
 import GameListElement from "./GameListElement";
+import LockIcon from "@mui/icons-material/Lock";
 
-export default function GameList() {
+export default function GameList(params) {
   const [games, setGames] = useState([]);
+  const [players, setPlayers] = useState([]);
+  const [tournament, setTournament] = useState();
+  const [isReadOnly, setIsReadOnly] = useState(false);
+
+  useEffect(() => {
+    const fetchTournament = async () => {
+      try {
+        const response = await fetch(`/api/tournaments/${params.tournamentId}`);
+
+        if (response.ok) {
+          const data = await response.json();
+          setTournament(data.tournament);
+
+          const now = new Date(); // Get current date and time
+          const twentyFourHoursAgo = new Date(
+            now.getTime() - 24 * 60 * 60 * 1000
+          ); // Subtract 24 hours
+          setIsReadOnly(
+            new Date(data.tournament.created_at) < twentyFourHoursAgo
+          );
+        } else {
+          console.error("Failed to fetch tournament data");
+        }
+      } catch (error) {
+        console.error("Error fetching tournament data:", error);
+      }
+    };
+
+    const fetchTournamentPlayers = async () => {
+      try {
+        const response = await fetch(
+          `/api/tournaments/${params.tournamentId}/players`
+        );
+
+        if (response.ok) {
+          const data = await response.json();
+          setPlayers(
+            data.players.reduce((map, player) => {
+              map[player.id] = player.name;
+              return map;
+            }, {})
+          );
+        } else {
+          console.error("Failed to fetch tournament players data");
+        }
+      } catch (error) {
+        console.error("Error fetching tournament players data:", error);
+      }
+    };
+
+    fetchTournamentPlayers();
+    fetchTournament();
+  }, []);
 
   useEffect(() => {
     const storedGames = localStorage.getItem("games");
@@ -23,74 +77,42 @@ export default function GameList() {
     }
   }, [games]);
 
-  const setScores = (
-    player1Name,
-    player1Scores,
-    player2Name,
-    player2Scores,
-    round
-  ) => {
-    if (!games) return;
-
-    const roundsLength = player1Scores.length;
-
-    const rounds = [];
-
-    for (let i = 0; i < roundsLength; i++) {
-      rounds.push({
-        player1Score: player1Scores[i],
-        player2Score: player2Scores[i],
-      });
-    }
-
-    setGames((prevGames) =>
-      prevGames.map((game) => {
-        if (game.game !== round) return game;
-
-        return {
-          ...game,
-          matches: game.matches.map((match) =>
-            match.player1Name === player1Name &&
-            match.player2Name === player2Name
-              ? {
-                  ...match,
-                  rounds,
-                }
-              : match
-          ),
-        };
-      })
-    );
-  };
-
   return (
     <ul className="overflow-scroll-y flex flex-col gap-2 justify-center items-center">
-      {games.map((game, index) => {
-        return (
-          <ul
-            key={`game-${index}`}
-            className="overflow-scroll-y flex flex-col gap-2 justify-center items-center"
-          >
-            <div className="flex flex-row w-full justify-center items-center">
-              <div className="flex-grow bg-white h-[1px] rounded-full" />
-              <div className="px-2">Runda {game.game + 1}</div>
-              <div className="flex-grow bg-white h-[1px] rounded-full" />
-            </div>
-            {game.matches.map((match, index) => {
-              return (
-                <div key={`element-${index}`}>
-                  <GameListElement
-                    key={index}
-                    match={match}
-                    setScores={setScores}
-                    round={game.game}
-                  />
-                </div>
-              );
-            })}
-          </ul>
-        );
-      })}
+      {isReadOnly && (
+        <div className="flex flex-row items-start justify-start gap-5 p-2 mx-2 bg-red-300/15 border-red-300 border rounded-xl font-semibold">
+          <LockIcon />
+          <p>Turneul este mai vechi de 24h si nu poate fi modificat</p>
+        </div>
+      )}
+      {tournament &&
+        tournament.games.map((game, index) => {
+          return (
+            <ul
+              key={`game-${index}`}
+              className="overflow-scroll-y flex flex-col gap-2 justify-center items-center"
+            >
+              <div className="flex flex-row w-full justify-center items-center">
+                <div className="flex-grow bg-white h-[1px] rounded-full" />
+                <div className="px-2">Joc {index + 1}</div>
+                <div className="flex-grow bg-white h-[1px] rounded-full" />
+              </div>
+              {game.rounds.map((round, index) => {
+                return (
+                  <div key={`element-${index}`}>
+                    <GameListElement
+                      key={index}
+                      round={round}
+                      tournamentId={params.tournamentId}
+                      players={players}
+                      isReadOnly={isReadOnly}
+                    />
+                  </div>
+                );
+              })}
+            </ul>
+          );
+        })}
     </ul>
   );
 }

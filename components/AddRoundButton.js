@@ -1,17 +1,21 @@
 "use client";
 
-import { generateGames } from "@/app/utils/utils";
 import { useRouter } from "next/navigation";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
+import { addGameToTournament } from "@/app/utils/utils";
 
 export default function AddRoundButton() {
   const router = useRouter();
 
-  const addRoundAndRefresh = () => {
-    generateGames();
+  const addRoundAndRefresh = async () => {
+    addGameToTournament().then((res) => {
+      const { id, error } = res;
 
-    router.push("/match");
-    window.location.reload();
+      if (error) return;
+
+      router.push(`/tournament/${id}`);
+      window.location.reload();
+    });
   };
 
   return (
@@ -21,7 +25,7 @@ export default function AddRoundButton() {
     >
       <div className="flex flex-row justify-center items-center">
         <AddCircleOutlineIcon />
-        <span className="ml-1">Runda</span>
+        <span className="ml-1">Joc</span>
       </div>
     </button>
   );

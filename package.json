@@ -13,8 +13,11 @@
     "@emotion/styled": "^11.14.0",
     "@mui/icons-material": "^6.4.6",
     "@mui/material": "^6.4.6",
+    "@supabase/supabase-js": "^2.49.1",
     "antd": "^5.24.2",
+    "dotenv": "^16.4.7",
     "next": "15.1.7",
+    "postgres": "^3.4.5",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "tailwind-scrollbar-hide": "^2.0.0"

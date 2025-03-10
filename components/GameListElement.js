@@ -1,16 +1,24 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { use, useEffect, useRef, useState } from "react";
 import WinnerIcon from "@mui/icons-material/EmojiEvents";
 import { yellow } from "@mui/material/colors";
+import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 
-export default function gameListElement({ match, setScores, round }) {
+export default function gameListElement({
+  players,
+  round,
+  tournamentId,
+  isReadOnly,
+}) {
   const [winner, setWinner] = useState(null);
 
   const [player1Values, setPlayer1Values] = useState(
-    match.rounds.map((round) => round.player1Score)
+    round.sets.map((set) => set.player_1_score)
   );
   const [player2Values, setPlayer2Values] = useState(
-    match.rounds.map((round) => round.player2Score)
+    round.sets.map((set) => set.player_2_score)
   );
+
+  const [isUploading, setIsUploading] = useState(false);
 
   const [player1Colors, setPlayer1Colors] = useState([
     "text-gray-400",
@@ -22,12 +30,6 @@ export default function gameListElement({ match, setScores, round }) {
     "text-gray-400",
     "text-gray-400",
   ]);
-
-  const validatedScore = (val) => {
-    let score = parseInt(val, 10);
-    if (isNaN(score)) return 0;
-    return Math.max(0, Math.min(25, score));
-  };
 
   const setInputValues1 = (value, index) => {
     const newValues = player1Values.map((v, i) => {
@@ -45,6 +47,12 @@ export default function gameListElement({ match, setScores, round }) {
     setPlayer2Values(newValues);
   };
 
+  const validatedScore = (val) => {
+    let score = parseInt(val, 10);
+    if (isNaN(score)) return 0;
+    return Math.max(0, Math.min(25, score));
+  };
+
   const calculateWinner = () => {
     let winner1 = 0;
     let winner2 = 0;
@@ -54,9 +62,9 @@ export default function gameListElement({ match, setScores, round }) {
       winner2 += player2Values[i] > player1Values[i] ? 1 : 0;
     }
 
-    if (winner1 > winner2 && winner1 >= Math.ceil(match.rounds.length / 2))
+    if (winner1 > winner2 && winner1 >= Math.ceil(round.sets.length / 2))
       setWinner(1);
-    else if (winner2 > winner1 && winner2 >= Math.ceil(match.rounds.length / 2))
+    else if (winner2 > winner1 && winner2 >= Math.ceil(round.sets.length / 2))
       setWinner(2);
     else setWinner(null);
   };
@@ -80,26 +88,56 @@ export default function gameListElement({ match, setScores, round }) {
     setPlayer2Colors(newColorsPlayer2);
 
     calculateWinner();
+  }, [player1Values, player2Values]);
 
-    setScores(
-      match.player1Name,
-      player1Values,
-      match.player2Name,
-      player2Values,
-      round
-    );
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      async function syncScores() {
+        try {
+          setIsUploading(true);
+          let newSets = [];
+
+          for (let i = 0; i < round.sets.length; i++) {
+            let set = round.sets[i];
+            newSets.push({
+              id: set.id,
+              player_1_score: player1Values[i],
+              player_2_score: player2Values[i],
+            });
+          }
+
+          const response = await fetch("/api/sets/scores", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              newSets,
+            }),
+          });
+
+          response.json().then(setIsUploading(false));
+        } catch (error) {
+          console.error("Error setting scores:", error);
+        }
+      }
+
+      syncScores();
+    }, 2000);
+
+    return () => clearTimeout(delayDebounceFn);
   }, [player1Values, player2Values]);
 
   return (
     <li className="flex flex-col bg-[#1e2021] items-center px-2 py-1 rounded-xl w-80">
       <div className="flex justify-between items-center w-full">
         <div className="flex-col text-center flex-1 max-h-12 overflow-y-scroll scrollbar-hide">
-          {match.player1Name}
+          {round.player_1_name ?? players[round.player_1_id]}
           <span className="mx-2" />
           {winner === 1 && <WinnerIcon sx={{ color: yellow[500] }} />}
         </div>
         <div className="flex-col text-center flex-1 max-h-12 overflow-y-scroll scrollbar-hide">
-          {match.player2Name}
+          {round.player_2_name ?? players[round.player_2_id]}
           <span className="mx-2" />
           {winner === 2 && <WinnerIcon sx={{ color: yellow[500] }} />}
         </div>
@@ -115,7 +153,10 @@ export default function gameListElement({ match, setScores, round }) {
                   type="number"
                   value={value}
                   placeholder="0"
-                  onClick={(e) => e.target.select()}
+                  readOnly={isReadOnly}
+                  onClick={(e) => {
+                    if (!isReadOnly) e.target.select();
+                  }}
                   onChange={(e) => {
                     setInputValues1(e.target.value, index);
                   }}
@@ -132,7 +173,10 @@ export default function gameListElement({ match, setScores, round }) {
                   type="number"
                   value={value}
                   placeholder="0"
-                  onClick={(e) => e.target.select()}
+                  readOnly={isReadOnly}
+                  onClick={(e) => {
+                    if (!isReadOnly) e.target.select();
+                  }}
                   onChange={(e) => {
                     setInputValues2(e.target.value, index);
                   }}
@@ -143,6 +187,9 @@ export default function gameListElement({ match, setScores, round }) {
           </div>
         </div>
       )}
+      <div className="w-full px-2 text-gray-600 min-h-7">
+        {isUploading && <CloudUploadIcon />}
+      </div>
     </li>
   );
 }
