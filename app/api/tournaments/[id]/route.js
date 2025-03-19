@@ -1,3 +1,4 @@
+import sql from "@/db";
 import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 
@@ -25,6 +26,19 @@ export async function GET(request, { params }) {
     )
     .eq("id", id)
     .single();
+
+  return NextResponse.json({ tournament }, { status: 200 });
+}
+
+export async function DELETE(request, { params }) {
+  const { id } = await params;
+
+  const tournament = await sql`
+    UPDATE tournaments
+    SET deleted = true
+    WHERE id = ${id}
+    RETURNING *
+  `;
 
   return NextResponse.json({ tournament }, { status: 200 });
 }

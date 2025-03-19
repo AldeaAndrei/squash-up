@@ -1,5 +1,5 @@
-import DownloadSection from "@/components/DownloadSection";
 import LeaderboardList from "@/components/LeaderboardList";
+import NavBar from "@/components/NavBar";
 import NavigationButton from "@/components/NavigationButton";
 
 export default async function LeaderboardPage({ params }) {
@@ -7,8 +7,8 @@ export default async function LeaderboardPage({ params }) {
 
   return (
     <div className="p-2">
-      <section className="my-5">
-        <NavigationButton path={`/tournament/${id}`} text="Scoruri" />
+      <section className="mt-2 mb-5">
+        <NavBar tournamentId={id} />
       </section>
       <section className="flex flex-col gap-2">
         <LeaderboardList tournamentId={id} />

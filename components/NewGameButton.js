@@ -6,7 +6,7 @@ import SimpleButton from "./SimpleButton";
 import CachedIcon from "@mui/icons-material/Cached";
 import NavigationButton from "./NavigationButton";
 
-export default function NewGameButton() {
+export default function NewGameButton({ noText }) {
   const [isModalOpen, setModalOpen] = useState(false);
   const handleOpen = () => setModalOpen(true);
   const handleClose = () => setModalOpen(false);
@@ -15,7 +15,8 @@ export default function NewGameButton() {
     <Fragment>
       <SimpleButton onClick={() => handleOpen()}>
         <div>
-          <CachedIcon /> Turneu Nou
+          <CachedIcon />
+          {!noText && <span>Turneu Nou</span>}
         </div>
       </SimpleButton>
       <Modal open={isModalOpen} onClose={handleClose}>

@@ -1,19 +1,13 @@
-import AddRoundButton from "@/components/AddRoundButton";
 import GameList from "@/components/GameList";
-import NavigationButton from "@/components/NavigationButton";
-import NewGameButton from "@/components/NewGameButton";
+import NavBar from "@/components/NavBar";
 
 export default async function TournamentPage({ params }) {
   const { id } = await params;
 
   return (
     <div className="p-2">
-      <section className="my-5">
-        <div className="flex gap-2 justify-center items-center">
-          <NavigationButton path={`/leaderboard/${id}`} text="" />
-          <AddRoundButton tournamentId={id} />
-          <NewGameButton />
-        </div>
+      <section className="mt-2 mb-5">
+        <NavBar tournamentId={id} />
       </section>
       <section className="flex flex-col gap-2">
         <GameList tournamentId={id} />

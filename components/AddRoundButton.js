@@ -1,18 +1,19 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import { addGameToTournament } from "@/app/utils/utils";
 import { useEffect, useState } from "react";
 
-export default function AddRoundButton() {
+export default function AddRoundButton({ noText, tournamentId }) {
   const router = useRouter();
+  const pathname = usePathname();
   const [isReadOnly, setIsReadOnly] = useState(false);
 
   useEffect(() => {
     const fetchTournament = async () => {
       try {
-        const response = await fetch(`/api/tournaments/${params.tournamentId}`);
+        const response = await fetch(`/api/tournaments/${tournamentId}`);
 
         if (response.ok) {
           const data = await response.json();
@@ -54,7 +55,7 @@ export default function AddRoundButton() {
     >
       <div className="flex flex-row justify-center items-center">
         <AddCircleOutlineIcon />
-        <span className="ml-1">Joc</span>
+        {!noText && <span className="ml-1">Joc</span>}
       </div>
     </button>
   );
