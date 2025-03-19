@@ -5,12 +5,14 @@ import AddRoundButton from "./AddRoundButton";
 import NavigationButton from "./NavigationButton";
 import NewGameButton from "./NewGameButton";
 import SetGameTypeButton from "./SetGameTypeButton";
+import StartGameButton from "./StartGameButton";
 
 export default function NavBar({ tournamentId }) {
   const pathname = usePathname();
 
   const canShowHistory = true;
   const canShowGameType = pathname.startsWith("/start");
+  const canShowStartGame = pathname.startsWith("/start");
   const canShowNewGame = !pathname.startsWith("/start");
   const canShowAddRound = pathname.startsWith("/tournament");
   const canShowScores =
@@ -32,6 +34,7 @@ export default function NavBar({ tournamentId }) {
         />
       )}
       {canShowGameType && <SetGameTypeButton />}
+      {canShowStartGame && <StartGameButton />}
       {canShowNewGame && <NewGameButton noText={!canShowNewGameText} />}
       {canShowAddRound && (
         <AddRoundButton tournamentId={tournamentId} noText={true} />
