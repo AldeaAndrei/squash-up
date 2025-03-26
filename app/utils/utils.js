@@ -101,29 +101,33 @@ export const generateNewTournament = async () => {
   let setsData = [];
   let pairs = {};
 
-  gamePlayers.forEach((player1) => {
-    gamePlayers.forEach((player2) => {
-      const pairKey = `${player1.id}-${player2.id}`;
-      const reversePairKey = `${player2.id}-${player1.id}`;
+  gamePlayers
+    .sort(() => Math.random() - 0.5)
+    .forEach((player1) => {
+      gamePlayers
+        .sort(() => Math.random() - 0.5)
+        .forEach((player2) => {
+          const pairKey = `${player1.id}-${player2.id}`;
+          const reversePairKey = `${player2.id}-${player1.id}`;
 
-      if (player1.id !== player2.id) {
-        if (!pairs[pairKey] && !pairs[reversePairKey]) {
-          const round = {
-            player_1_name: player1.name,
-            player_2_name: player2.name,
-            player_1_id: player1.database_id,
-            player_2_id: player2.database_id,
-            game_id: game[0].id,
-          };
+          if (player1.id !== player2.id) {
+            if (!pairs[pairKey] && !pairs[reversePairKey]) {
+              const round = {
+                player_1_name: player1.name,
+                player_2_name: player2.name,
+                player_1_id: player1.database_id,
+                player_2_id: player2.database_id,
+                game_id: game[0].id,
+              };
 
-          pairs[pairKey] = true;
-          pairs[reversePairKey] = true;
+              pairs[pairKey] = true;
+              pairs[reversePairKey] = true;
 
-          roundsData.push(round);
-        }
-      }
+              roundsData.push(round);
+            }
+          }
+        });
     });
-  });
 
   let rounds = await createMultipleRoundsEntry(roundsData);
 
@@ -166,29 +170,33 @@ export const addGameToTournament = async () => {
   let setsData = [];
   let pairs = {};
 
-  gamePlayers.forEach((player1) => {
-    gamePlayers.forEach((player2) => {
-      const pairKey = `${player1.id}-${player2.id}`;
-      const reversePairKey = `${player2.id}-${player1.id}`;
+  gamePlayers
+    .sort(() => Math.random() - 0.5)
+    .forEach((player1) => {
+      gamePlayers
+        .sort(() => Math.random() - 0.5)
+        .forEach((player2) => {
+          const pairKey = `${player1.id}-${player2.id}`;
+          const reversePairKey = `${player2.id}-${player1.id}`;
 
-      if (player1.id !== player2.id) {
-        if (!pairs[pairKey] && !pairs[reversePairKey]) {
-          const round = {
-            player_1_name: player1.name,
-            player_2_name: player2.name,
-            player_1_id: player1.database_id,
-            player_2_id: player2.database_id,
-            game_id: game[0].id,
-          };
+          if (player1.id !== player2.id) {
+            if (!pairs[pairKey] && !pairs[reversePairKey]) {
+              const round = {
+                player_1_name: player1.name,
+                player_2_name: player2.name,
+                player_1_id: player1.database_id,
+                player_2_id: player2.database_id,
+                game_id: game[0].id,
+              };
 
-          pairs[pairKey] = true;
-          pairs[reversePairKey] = true;
+              pairs[pairKey] = true;
+              pairs[reversePairKey] = true;
 
-          roundsData.push(round);
-        }
-      }
+              roundsData.push(round);
+            }
+          }
+        });
     });
-  });
 
   let rounds = await createMultipleRoundsEntry(roundsData);
 
@@ -206,3 +214,6 @@ export const addGameToTournament = async () => {
 
   return { id: currentTournamentId, error: null };
 };
+
+// TODO
+// const getPlayersOrder = (count) => {};

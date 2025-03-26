@@ -1,4 +1,4 @@
-import React, { use, useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import WinnerIcon from "@mui/icons-material/EmojiEvents";
 import { yellow } from "@mui/material/colors";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
@@ -30,6 +30,8 @@ export default function gameListElement({
     "text-gray-400",
     "text-gray-400",
   ]);
+
+  const [eloData, setEloData] = useState();
 
   const setInputValues1 = (value, index) => {
     const newValues = player1Values.map((v, i) => {
@@ -92,6 +94,25 @@ export default function gameListElement({
 
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
+      async function getEloChanges() {
+        try {
+          const response = await fetch(`/api/elo/rounds/${round.id}`);
+
+          if (response.ok) {
+            const data = await response.json();
+
+            setEloData(
+              data.elo.reduce((map, d) => {
+                map[`${d.id}-${d.name}`] = { elo: d.elo, change: d.elo_change };
+                return map;
+              }, {})
+            );
+          } else {
+            console.error("Failed to fetch elo data");
+          }
+        } catch (error) {}
+      }
+
       async function syncScores() {
         try {
           setIsUploading(true);
@@ -123,23 +144,49 @@ export default function gameListElement({
       }
 
       syncScores();
+      getEloChanges();
     }, 2000);
 
     return () => clearTimeout(delayDebounceFn);
   }, [player1Values, player2Values]);
 
+  const parseElo = (id, name) => {
+    if (eloData[`${id}-${name}`]?.change == null) return <></>;
+
+    return (
+      <div className="align-middle text-sm">
+        <span className="mr-2">{eloData[`${id}-${name}`]?.elo}</span>
+        <span
+          className={
+            eloData[`${id}-${name}`]?.change < 0
+              ? "text-[#c54242]"
+              : "text-[#84c542]"
+          }
+        >
+          {eloData[`${id}-${name}`]?.change < 0
+            ? `${eloData[`${id}-${name}`]?.change}`
+            : `+${eloData[`${id}-${name}`]?.change}`}
+        </span>
+      </div>
+    );
+  };
+
   return (
     <li className="flex flex-col bg-[#1e2021] items-center px-2 py-1 rounded-xl w-80">
       <div className="flex justify-between items-center w-full">
         <div className="flex-col text-center flex-1 max-h-12 overflow-y-scroll scrollbar-hide">
-          {round.player_1_name ?? players[round.player_1_id]}
-          <span className="mx-2" />
-          {winner === 1 && <WinnerIcon sx={{ color: yellow[500] }} />}
+          <span>
+            {round.player_1_name ?? players[round.player_1_id]}
+            {winner === 1 && <WinnerIcon sx={{ color: yellow[500] }} />}
+          </span>
+          {eloData && parseElo(round.player_1_id, round.player_1_name)}
         </div>
         <div className="flex-col text-center flex-1 max-h-12 overflow-y-scroll scrollbar-hide">
-          {round.player_2_name ?? players[round.player_2_id]}
-          <span className="mx-2" />
-          {winner === 2 && <WinnerIcon sx={{ color: yellow[500] }} />}
+          <span>
+            {round.player_2_name ?? players[round.player_2_id]}{" "}
+            {winner === 2 && <WinnerIcon sx={{ color: yellow[500] }} />}
+          </span>
+          {eloData && parseElo(round.player_2_id, round.player_2_name)}
         </div>
       </div>
       <div className="flex justify-center items-center w-[80%] h-[1px] bg-slate-400 rounded-full my-3" />
