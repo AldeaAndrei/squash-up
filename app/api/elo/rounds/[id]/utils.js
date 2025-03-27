@@ -35,7 +35,7 @@ export async function calculateEloForRound(id) {
         id: d.id,
         name: d.name,
         elo_change: 0,
-        elo: Math.round(d.elo),
+        elo: Math.round(d.elo) || 0,
       });
     });
 
@@ -87,15 +87,15 @@ export async function calculateEloForRound(id) {
   winner = elo.updateRating(expectedScoreA, 1, winner);
   loser = elo.updateRating(expectedScoreB, 0, loser);
 
-  eloChanges[winnerId] = winner - playersEloHash[winnerId];
-  eloChanges[loserId] = loser - playersEloHash[loserId];
+  eloChanges[winnerId] = winner - playersEloHash[winnerId] || 0;
+  eloChanges[loserId] = loser - playersEloHash[loserId] || 0;
 
   playersElo.forEach((d) => {
     finalData.push({
       id: d.id,
       name: d.name,
-      elo_change: Math.round(eloChanges[d.id]),
-      elo: Math.round(playersEloHash[d.id] + eloChanges[d.id]),
+      elo_change: Math.round(eloChanges[d.id]) || 0,
+      elo: Math.round(playersEloHash[d.id] + eloChanges[d.id]) || 0,
     });
   });
 
@@ -106,21 +106,23 @@ export async function calculateEloForRound(id) {
     playersDetails[key1] = {
       id: round.player_1_id,
       name: round.player_1_name,
-      elo_change: Math.round(eloChanges[round.player_1_id ?? -1]),
-      elo: Math.round(
-        playersEloHash[round.player_1_id ?? -1] +
-          eloChanges[round.player_1_id ?? -1]
-      ),
+      elo_change: Math.round(eloChanges[round.player_1_id ?? -1]) || 0,
+      elo:
+        Math.round(
+          playersEloHash[round.player_1_id ?? -1] +
+            eloChanges[round.player_1_id ?? -1]
+        ) || 0,
     };
 
     playersDetails[key2] = {
       id: round.player_2_id,
       name: round.player_2_name,
-      elo_change: Math.round(eloChanges[round.player_2_id ?? -1]),
-      elo: Math.round(
-        playersEloHash[round.player_2_id ?? -1] +
-          eloChanges[round.player_2_id ?? -1]
-      ),
+      elo_change: Math.round(eloChanges[round.player_2_id ?? -1]) || 0,
+      elo:
+        Math.round(
+          playersEloHash[round.player_2_id ?? -1] +
+            eloChanges[round.player_2_id ?? -1]
+        ) || 0,
     };
   });
 

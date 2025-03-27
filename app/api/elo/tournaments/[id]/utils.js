@@ -4,8 +4,34 @@ import {
 } from "@/app/api/utils/players";
 import sql from "@/db";
 import EloRank from "elo-rank";
+import { calculateEloForRound } from "../../rounds/[id]/utils";
 
 export async function calculateEloForTournament(id) {
+  // const eloForRound = await calculateEloForRound(id);
+
+  let rounds = await sql`
+    SELECT rounds.id, rounds.player_1_id, rounds.player_2_id, rounds.player_1_name, rounds.player_2_name
+    FROM tournaments 
+    JOIN games ON games.tournament_id = tournaments.id 
+    JOIN rounds ON rounds.game_id = games.id 
+    WHERE tournaments.id = ${id}`;
+
+  let playersEloChange = {};
+
+  rounds.forEach(async (round) => {
+    let results = await calculateEloForRound(round.id);
+
+    results.forEach((d) => {
+      if (!playersEloChange[`${d.id}-${d.name}`])
+        playersEloChange[`${d.id}-${d.name}`] = [d.elo];
+      playersEloChange[`${d.id}-${d.name}`].push(d.elo);
+    });
+  });
+
+  console.log(playersEloChange);
+
+  return;
+
   const playersIds = await getPlayersIdsForTournament(id);
   const playersElo = await getPlayersEloDetails(playersIds);
 
