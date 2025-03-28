@@ -1,27 +1,24 @@
-import { createClient } from "@supabase/supabase-js";
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-);
+import sql from "@/db";
 
 export async function GET(request) {
   const { searchParams } = new URL(request.url);
   const name = searchParams.get("name");
 
-  let query = supabase.from("players").select("*");
+  try {
+    let data;
 
-  if (name) {
-    query = query.ilike("name", `%${name}%`); // Case-insensitive search
-  }
+    if (name) {
+      data =
+        await sql`SELECT id, name, elo, RANK() OVER (ORDER BY elo DESC) AS rank FROM players WHERE name ILIKE ANY(ARRAY[${name} || '%', '% ' || ${name} || '%'])`;
+    } else {
+      data =
+        await sql`SELECT id, name, elo, RANK() OVER (ORDER BY elo DESC) AS rank FROM players`;
+    }
 
-  const { data, error } = await query;
-
-  if (error) {
-    return new Response(JSON.stringify({ error: error.message }), {
+    return new Response(JSON.stringify(data), { status: 200 });
+  } catch (err) {
+    return new Response(JSON.stringify({ error: err.message }), {
       status: 500,
     });
   }
-
-  return new Response(JSON.stringify(data), { status: 200 });
 }

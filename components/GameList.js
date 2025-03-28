@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import GameListElement from "./GameListElement";
 import LockIcon from "@mui/icons-material/Lock";
+import CalculateEloButton from "./CalculateEloButton";
 
 export default function GameList(params) {
   const [games, setGames] = useState([]);
@@ -85,6 +86,9 @@ export default function GameList(params) {
           <p>Turneul este mai vechi de 24h si nu poate fi modificat</p>
         </div>
       )}
+      {/* <div>
+        <CalculateEloButton tournamentId={params.tournamentId} />
+      </div> */}
       {tournament &&
         tournament.games.map((game, index) => {
           return (
