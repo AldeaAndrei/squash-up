@@ -9,6 +9,9 @@ export async function calculateEloForRound(id) {
   const playersIds = await getPlayersIdsForRound(id);
   const playersElo = await getPlayersEloDetails(playersIds);
 
+  console.log(`\n\n\n calculateEloForRound -- ${id}`);
+  console.group();
+
   let rounds = await sql`
           SELECT *, rounds.id AS round_id, sets.id AS set_id
           FROM rounds 
@@ -22,6 +25,8 @@ export async function calculateEloForRound(id) {
   playersElo.forEach((data) => {
     playersEloHash[data.id] = data.elo;
   });
+
+  console.log(playersEloHash);
 
   let finalData = [];
 
@@ -57,6 +62,13 @@ export async function calculateEloForRound(id) {
     }
   });
 
+  console.log(resultsByRound);
+
+  if (resultsByRound[id].length === 0) {
+    console.groupEnd();
+    return finalData.sort((a, b) => b.elo - a.elo);
+  }
+
   Object.keys(resultsByRound).forEach((key) => {
     let winner =
       mostFrequentNumber(resultsByRound[key].map((r) => r.winner)) || -1;
@@ -88,14 +100,16 @@ export async function calculateEloForRound(id) {
   loser = elo.updateRating(expectedScoreB, 0, loser);
 
   eloChanges[winnerId] = winner - playersEloHash[winnerId] || 0;
-  eloChanges[loserId] = loser - playersEloHash[loserId] || 0;
+  eloChanges[loserId] = loser - playersEloHash[loserId];
+
+  console.log(eloChanges);
 
   playersElo.forEach((d) => {
     finalData.push({
       id: d.id,
       name: d.name,
       elo_change: Math.round(eloChanges[d.id]) || 0,
-      elo: Math.round(playersEloHash[d.id] + eloChanges[d.id]) || 0,
+      elo: Math.round(playersEloHash[d.id] + eloChanges[d.id]),
     });
   });
 
@@ -107,26 +121,79 @@ export async function calculateEloForRound(id) {
       id: round.player_1_id,
       name: round.player_1_name,
       elo_change: Math.round(eloChanges[round.player_1_id ?? -1]) || 0,
-      elo:
-        Math.round(
-          playersEloHash[round.player_1_id ?? -1] +
-            eloChanges[round.player_1_id ?? -1]
-        ) || 0,
+      elo: Math.round(
+        playersEloHash[round.player_1_id ?? -1] +
+          eloChanges[round.player_1_id ?? -1]
+      ),
     };
 
     playersDetails[key2] = {
       id: round.player_2_id,
       name: round.player_2_name,
       elo_change: Math.round(eloChanges[round.player_2_id ?? -1]) || 0,
-      elo:
-        Math.round(
-          playersEloHash[round.player_2_id ?? -1] +
-            eloChanges[round.player_2_id ?? -1]
-        ) || 0,
+      elo: Math.round(
+        playersEloHash[round.player_2_id ?? -1] +
+          eloChanges[round.player_2_id ?? -1]
+      ),
     };
   });
 
+  console.log(Object.values(playersDetails));
+  console.groupEnd();
+
   return Object.values(playersDetails);
+}
+
+export async function updateEloForRound(id) {
+  const already_used = sql`SELECT used_for_elo FROM rounds WHERE id=${id}`;
+
+  if (already_used === true) {
+    return {
+      updatedPlayersRows: null,
+      updatedRoundsRows: null,
+      errors: "Already used",
+    };
+  }
+
+  const elo = await calculateEloForRound(id);
+
+  if (elo.length === 0) {
+    return {
+      updatedPlayersRows: null,
+      updatedRoundsRows: null,
+      errors: "No updates",
+    };
+  }
+
+  const values = Object.values(elo)
+    .map(({ id, elo }) => `(${id}, ${elo})`)
+    .join(", ");
+
+  const queryPlayers = `
+        UPDATE players AS p
+        SET
+          elo = v.elo
+        FROM (VALUES ${values}) AS v(id, elo)
+        WHERE p.id = v.id
+      RETURNING p.id, p.elo;
+    `;
+
+  const queryRounds = `
+      UPDATE rounds AS r
+      SET
+        used_for_elo = TRUE
+      WHERE r.id = ${id}
+      RETURNING r.id, r.used_for_elo;
+    `;
+
+  const updatedPlayersRows = await sql.unsafe(queryPlayers);
+  const updatedRoundsRows = await sql.unsafe(queryRounds);
+
+  return {
+    updatedPlayersRows: updatedPlayersRows,
+    updatedRoundsRows: updatedRoundsRows,
+    errors: null,
+  };
 }
 
 function mostFrequentNumber(arr) {

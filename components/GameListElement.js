@@ -236,6 +236,7 @@ export default function gameListElement({
       )}
       <div className="w-full px-2 text-gray-600 min-h-7">
         {isUploading && <CloudUploadIcon />}
+        {round.used_for_elo && <p className="text-sm">ELO ✓</p>}
       </div>
     </li>
   );

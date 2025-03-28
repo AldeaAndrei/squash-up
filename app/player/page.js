@@ -25,9 +25,10 @@ export default function PlayerPage() {
         <div className="flex flex-col gap-3">
           <h1 className="flex gap-2 font-bold text-3xl items-center justify-start">
             <span>{playerData.name}</span>
-            {playerData?.rank && (
+            {/* TODO: fix */}
+            {/* {playerData?.rank && (
               <span className="font-semibold text-2xl">#{playerData.rank}</span>
-            )}
+            )} */}
           </h1>
           {playerData?.elo && (
             <p>

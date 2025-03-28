@@ -4,7 +4,7 @@ import {
 } from "@/app/api/utils/players";
 import sql from "@/db";
 import EloRank from "elo-rank";
-import { calculateEloForRound } from "../../rounds/[id]/utils";
+import { calculateEloForRound } from "../../utils";
 
 export async function calculateEloForTournament(id) {
   // const eloForRound = await calculateEloForRound(id);
@@ -16,21 +16,30 @@ export async function calculateEloForTournament(id) {
     JOIN rounds ON rounds.game_id = games.id 
     WHERE tournaments.id = ${id}`;
 
-  let playersEloChange = {};
+  // let playersEloChange = {};
 
-  rounds.forEach(async (round) => {
-    let results = await calculateEloForRound(round.id);
+  // rounds.forEach(async (round) => {
+  //   console.log(round.id);
+  //   let results = await calculateEloForRound(round.id);
 
-    results.forEach((d) => {
-      if (!playersEloChange[`${d.id}-${d.name}`])
-        playersEloChange[`${d.id}-${d.name}`] = [d.elo];
-      playersEloChange[`${d.id}-${d.name}`].push(d.elo);
-    });
-  });
+  //   let r = await sql`
+  //   SELECT *, rounds.id AS round_id, sets.id AS set_id
+  //   FROM rounds
+  //   JOIN sets ON sets.round_id = rounds.id
+  //   WHERE rounds.id = ${round.id}`;
 
-  console.log(playersEloChange);
+  //   console.log(r);
 
-  return;
+  //   results.forEach((d) => {
+  //     if (!playersEloChange[`${d.id}-${d.name}`])
+  //       playersEloChange[`${d.id}-${d.name}`] = [d.elo];
+  //     playersEloChange[`${d.id}-${d.name}`].push(d.elo);
+  //   });
+  // });
+
+  console.log(rounds);
+
+  return {};
 
   const playersIds = await getPlayersIdsForTournament(id);
   const playersElo = await getPlayersEloDetails(playersIds);

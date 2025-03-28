@@ -21,19 +21,16 @@ export async function getPlayersIdsForTournament(tournamentId) {
 }
 
 export async function getPlayersIdsForRound(roundId) {
-  let data = await sql`
-    SELECT rounds.player_1_id, rounds.player_2_id
+  const data = await sql`
+    SELECT player_1_id, player_2_id
     FROM rounds 
-    WHERE rounds.id = ${roundId}`;
+    WHERE id = ${roundId}
+  `;
 
-  let uniqIds = new Set();
-
-  data.forEach((d) => {
-    uniqIds.add(d.player_1_id);
-    uniqIds.add(d.player_2_id);
-  });
-
-  return [...uniqIds];
+  return data.flatMap(({ player_1_id, player_2_id }) => [
+    player_1_id,
+    player_2_id,
+  ]);
 }
 
 export async function getPlayersEloDetails(playersIds) {
