@@ -107,8 +107,13 @@ export default function GameList(params) {
                     <GameListElement
                       key={index}
                       round={round}
-                      tournamentId={params.tournamentId}
                       players={players}
+                      player1ValuesProps={round.sets.map(
+                        (set) => set.player_1_score
+                      )}
+                      player2ValuesProps={round.sets.map(
+                        (set) => set.player_2_score
+                      )}
                       isReadOnly={isReadOnly}
                     />
                   </div>

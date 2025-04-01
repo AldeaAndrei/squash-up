@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import WinnerIcon from "@mui/icons-material/EmojiEvents";
 import { yellow } from "@mui/material/colors";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
@@ -6,17 +6,14 @@ import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 export default function gameListElement({
   players,
   round,
-  tournamentId,
   isReadOnly,
+  player1ValuesProps,
+  player2ValuesProps,
 }) {
   const [winner, setWinner] = useState(null);
 
-  const [player1Values, setPlayer1Values] = useState(
-    round.sets.map((set) => set.player_1_score)
-  );
-  const [player2Values, setPlayer2Values] = useState(
-    round.sets.map((set) => set.player_2_score)
-  );
+  const [player1Values, setPlayer1Values] = useState(player1ValuesProps);
+  const [player2Values, setPlayer2Values] = useState(player2ValuesProps);
 
   const [isUploading, setIsUploading] = useState(false);
 
@@ -34,6 +31,7 @@ export default function gameListElement({
   const [eloData, setEloData] = useState();
 
   const setInputValues1 = (value, index) => {
+    console.log("Change 1");
     const newValues = player1Values.map((v, i) => {
       return i === index ? validatedScore(value) : v;
     });
@@ -71,7 +69,7 @@ export default function gameListElement({
     else setWinner(null);
   };
 
-  useEffect(() => {
+  const setColors = () => {
     if (player1Values == null || player2Values == null) return;
 
     const newColorsPlayer1 = player1Values.map((v, i) => {
@@ -88,63 +86,71 @@ export default function gameListElement({
 
     setPlayer1Colors(newColorsPlayer1);
     setPlayer2Colors(newColorsPlayer2);
+  };
 
-    calculateWinner();
-  }, [player1Values, player2Values]);
+  const getEloChanges = async () => {
+    try {
+      const response = await fetch(`/api/elo/rounds/${round.id}`);
+
+      if (response.ok) {
+        const data = await response.json();
+
+        setEloData(
+          data.elo.reduce((map, d) => {
+            map[`${d.id}-${d.name}`] = { elo: d.elo, change: d.elo_change };
+            return map;
+          }, {})
+        );
+      } else {
+        console.error("Failed to fetch elo data");
+      }
+    } catch (error) {}
+  };
+
+  const syncScores = async () => {
+    try {
+      setIsUploading(true);
+      let newSets = [];
+
+      for (let i = 0; i < round.sets.length; i++) {
+        let set = round.sets[i];
+        newSets.push({
+          id: set.id,
+          player_1_score: player1Values[i],
+          player_2_score: player2Values[i],
+        });
+      }
+
+      const response = await fetch("/api/sets/scores", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          newSets,
+        }),
+      });
+
+      response.json().then(setIsUploading(false));
+    } catch (error) {
+      console.error("Error setting scores:", error);
+    }
+  };
+
+  const isFirstRender = useRef(true);
 
   useEffect(() => {
+    setColors();
+    calculateWinner();
+    getEloChanges();
+
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return; // Skip effect on first render
+    }
+
     const delayDebounceFn = setTimeout(() => {
-      async function getEloChanges() {
-        try {
-          const response = await fetch(`/api/elo/rounds/${round.id}`);
-
-          if (response.ok) {
-            const data = await response.json();
-
-            setEloData(
-              data.elo.reduce((map, d) => {
-                map[`${d.id}-${d.name}`] = { elo: d.elo, change: d.elo_change };
-                return map;
-              }, {})
-            );
-          } else {
-            console.error("Failed to fetch elo data");
-          }
-        } catch (error) {}
-      }
-
-      async function syncScores() {
-        try {
-          setIsUploading(true);
-          let newSets = [];
-
-          for (let i = 0; i < round.sets.length; i++) {
-            let set = round.sets[i];
-            newSets.push({
-              id: set.id,
-              player_1_score: player1Values[i],
-              player_2_score: player2Values[i],
-            });
-          }
-
-          const response = await fetch("/api/sets/scores", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              newSets,
-            }),
-          });
-
-          response.json().then(setIsUploading(false));
-        } catch (error) {
-          console.error("Error setting scores:", error);
-        }
-      }
-
       syncScores();
-      getEloChanges();
     }, 2000);
 
     return () => clearTimeout(delayDebounceFn);
