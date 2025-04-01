@@ -15,7 +15,10 @@ export default function LoginPage() {
   }, [state, pending]);
 
   return (
-    <form action={action}>
+    <form
+      className="w-80 bg-[#ffffff05] rounded-xl border-[#0000005b] border-2 mx-auto mt-10"
+      action={action}
+    >
       <div className="flex flex-col justify-start items-center gap-4 w-full px-3 pt-2">
         <label htmlFor="username" className="w-full">
           Username
