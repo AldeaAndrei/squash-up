@@ -8,9 +8,9 @@ const protectedRoutes = [
   "/history",
   "/player",
   "/tournament",
-  "/api",
+  // "/api",
 ];
-const publicRoutes = ["/login", "/signup", "/"];
+const publicRoutes = ["/login", "/signup", "/", "public-elo"];
 
 export default async function middleware(req) {
   // 2. Check if the current route is protected or public

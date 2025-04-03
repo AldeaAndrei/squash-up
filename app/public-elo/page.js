@@ -30,7 +30,10 @@ export default function PublicEloPage() {
         <ul>
           {players.map((player) => {
             return (
-              <li className="flex flex-row items-center justify-between h-10">
+              <li
+                key={player.id}
+                className="flex flex-row items-center justify-between h-10"
+              >
                 <div className="flex-[1] border border-gray-700 px-1 h-full text-center flex items-center justify-center">
                   {player.rank}
                 </div>
