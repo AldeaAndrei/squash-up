@@ -59,6 +59,14 @@ export default function MenuButton() {
             <ul className="py-2">
               <li>
                 <button
+                  onClick={() => handleNavigate("/public-elo")}
+                  className="block px-4 py-2 hover:translate-x-1 w-full text-left text-lg"
+                >
+                  Clasament
+                </button>
+              </li>
+              <li>
+                <button
                   onClick={() => handleNavigate("/history")}
                   className="block px-4 py-2 hover:translate-x-1 w-full text-left text-lg"
                 >
@@ -93,6 +101,14 @@ export default function MenuButton() {
           )}
           {player == null && (
             <ul className="py-2">
+              <li>
+                <button
+                  onClick={() => handleNavigate("/public-elo")}
+                  className="block px-4 py-2 hover:translate-x-1 w-full text-left text-lg"
+                >
+                  Clasament
+                </button>
+              </li>
               <li>
                 <button
                   onClick={() => handleNavigate("/signup")}
