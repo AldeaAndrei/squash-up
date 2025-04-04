@@ -86,7 +86,11 @@ export default function TournamentsHistoryList() {
                     <div className="flex flex-col flex-[4]">
                       <div className="text-gray-400">Data:</div>
                       <div>
-                        {new Date(t.created_at).toLocaleDateString("en-GB")}
+                        {new Date(t.created_at).toLocaleDateString("en-GB", {
+                          day: "2-digit",
+                          month: "short",
+                          year: "numeric",
+                        })}
                       </div>
                       <br />
                       <div className="text-gray-400">Jucat de:</div>
