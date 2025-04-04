@@ -2,15 +2,13 @@ import {
   getPlayersEloDetails,
   getPlayersIdsForRound,
 } from "@/app/api/utils/players";
+import prisma from "@/app/lib/prisma";
 import sql from "@/db";
 import EloRank from "elo-rank";
 
 export async function calculateEloForRound(id) {
   const playersIds = await getPlayersIdsForRound(id);
   const playersElo = await getPlayersEloDetails(playersIds);
-
-  console.log(`\n\n\n calculateEloForRound -- ${id}`);
-  console.group();
 
   let rounds = await sql`
           SELECT *, rounds.id AS round_id, sets.id AS set_id
@@ -25,8 +23,6 @@ export async function calculateEloForRound(id) {
   playersElo.forEach((data) => {
     playersEloHash[data.id] = data.elo;
   });
-
-  console.log(playersEloHash);
 
   let finalData = [];
 
@@ -62,10 +58,7 @@ export async function calculateEloForRound(id) {
     }
   });
 
-  console.log(resultsByRound);
-
   if (resultsByRound[id].length === 0) {
-    console.groupEnd();
     return finalData.sort((a, b) => b.elo - a.elo);
   }
 
@@ -102,8 +95,6 @@ export async function calculateEloForRound(id) {
   eloChanges[winnerId] = winner - playersEloHash[winnerId] || 0;
   eloChanges[loserId] = loser - playersEloHash[loserId];
 
-  console.log(eloChanges);
-
   playersElo.forEach((d) => {
     finalData.push({
       id: d.id,
@@ -138,16 +129,30 @@ export async function calculateEloForRound(id) {
     };
   });
 
-  console.log(Object.values(playersDetails));
-  console.groupEnd();
-
   return Object.values(playersDetails);
 }
 
-export async function updateEloForRound(id) {
-  const already_used = sql`SELECT used_for_elo FROM rounds WHERE id=${id}`;
+export async function updateEloForRound(roundId) {
+  const round = await prisma.rounds.findUnique({
+    where: {
+      id: BigInt(roundId), // Ensure you are passing the roundId as BigInt
+    },
+    select: {
+      used_for_elo: true,
+    },
+  });
 
-  if (already_used === true) {
+  if (!round) {
+    return {
+      updatedPlayersRows: null,
+      updatedRoundsRows: null,
+      errors: "Round not found",
+    };
+  }
+
+  const already_used = round.used_for_elo;
+
+  if (already_used) {
     return {
       updatedPlayersRows: null,
       updatedRoundsRows: null,
@@ -155,7 +160,7 @@ export async function updateEloForRound(id) {
     };
   }
 
-  const elo = await calculateEloForRound(id);
+  const elo = await calculateEloForRound(roundId);
 
   if (elo.length === 0) {
     return {
@@ -164,34 +169,35 @@ export async function updateEloForRound(id) {
       errors: "No updates",
     };
   }
+  const updatedPlayers = await Promise.all(
+    elo.map(async ({ id, elo }) => {
+      return prisma.players.update({
+        where: { id: BigInt(id) },
+        data: { elo },
+        select: { id: true, elo: true },
+      });
+    })
+  );
 
-  const values = Object.values(elo)
-    .map(({ id, elo }) => `(${id}, ${elo})`)
-    .join(", ");
+  const updatedRound = await prisma.rounds.update({
+    where: { id: BigInt(roundId) },
+    data: { used_for_elo: true },
+    select: { id: true, used_for_elo: true },
+  });
 
-  const queryPlayers = `
-        UPDATE players AS p
-        SET
-          elo = v.elo
-        FROM (VALUES ${values}) AS v(id, elo)
-        WHERE p.id = v.id
-      RETURNING p.id, p.elo;
-    `;
+  const eloHistories = elo.map(({ id, elo }) => ({
+    player_id: BigInt(id),
+    round_id: BigInt(roundId),
+    elo,
+  }));
 
-  const queryRounds = `
-      UPDATE rounds AS r
-      SET
-        used_for_elo = TRUE
-      WHERE r.id = ${id}
-      RETURNING r.id, r.used_for_elo;
-    `;
-
-  const updatedPlayersRows = await sql.unsafe(queryPlayers);
-  const updatedRoundsRows = await sql.unsafe(queryRounds);
+  const createdEloHistories = await prisma.elo_histories.createMany({
+    data: eloHistories,
+  });
 
   return {
-    updatedPlayersRows: updatedPlayersRows,
-    updatedRoundsRows: updatedRoundsRows,
+    updatedPlayersRows: updatedPlayers,
+    updatedRoundsRows: updatedRound,
     errors: null,
   };
 }

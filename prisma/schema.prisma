@@ -1,0 +1,71 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model elo_histories {
+  id         BigInt    @id @default(autoincrement())
+  created_at DateTime  @default(now()) @db.Timestamptz(6)
+  player_id  BigInt?
+  round_id   BigInt?
+  date       DateTime? @db.Timestamptz(6)
+  elo        BigInt?
+  players    players?  @relation(fields: [player_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  rounds     rounds?   @relation(fields: [round_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model games {
+  id            BigInt      @id @default(autoincrement())
+  created_at    DateTime    @default(now()) @db.Timestamptz(6)
+  created_by    BigInt?
+  played_by     BigInt[]
+  tournament_id BigInt
+  tournaments   tournaments @relation(fields: [tournament_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  rounds        rounds[]
+}
+
+model players {
+  id            BigInt          @id(map: "users_pkey") @default(autoincrement())
+  created_at    DateTime        @default(now()) @db.Timestamptz(6)
+  password      String?
+  elo           Int             @default(1600)
+  name          String
+  username      String          @unique
+  type          String?         @default("user")
+  elo_histories elo_histories[]
+}
+
+model rounds {
+  id            BigInt          @id @default(autoincrement())
+  created_at    DateTime        @default(now()) @db.Timestamptz(6)
+  player_1_id   BigInt?
+  player_2_id   BigInt?
+  game_id       BigInt
+  player_1_name String?
+  player_2_name String?
+  used_for_elo  Boolean         @default(false)
+  elo_histories elo_histories[]
+  games         games           @relation(fields: [game_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  sets          sets[]
+}
+
+model sets {
+  id             BigInt   @id @default(autoincrement())
+  created_at     DateTime @default(now()) @db.Timestamptz(6)
+  player_1_score Int      @default(0)
+  player_2_score Int      @default(0)
+  round_id       BigInt
+  rounds         rounds   @relation(fields: [round_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model tournaments {
+  id         BigInt   @id @default(autoincrement())
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+  deleted    Boolean? @default(false)
+  games      games[]
+}
