@@ -119,28 +119,6 @@ export const generateNewTournament = async () => {
   let generatedPairs = getPlayersPairs(gamePlayers.length);
   gamePlayers = gamePlayers.sort(() => Math.random() - 0.5);
 
-  if (generatedPairs.length === 0) {
-    let newGeneratedPairs = [];
-    gamePlayers
-      .sort(() => Math.random() - 0.5)
-      .forEach((player1) => {
-        gamePlayers
-          .sort(() => Math.random() - 0.5)
-          .forEach((player2) => {
-            const pairKey = `${player1.id}-${player2.id}`;
-            const reversePairKey = `${player2.id}-${player1.id}`;
-
-            if (
-              player1.id !== player2.id &&
-              !pairs[pairKey] &&
-              !pairs[reversePairKey]
-            ) {
-              newGeneratedPairs.push([player1.id, player2.id]);
-            }
-          });
-      });
-  }
-
   generatedPairs.forEach((pair) => {
     const player1 = gamePlayers[pair[0]];
     const player2 = gamePlayers[pair[1]];
@@ -216,28 +194,6 @@ export const addGameToTournament = async () => {
   let generatedPairs = getPlayersPairs(gamePlayers.length);
   gamePlayers = gamePlayers.sort(() => Math.random() - 0.5);
 
-  if (generatedPairs.length === 0) {
-    let newGeneratedPairs = [];
-    gamePlayers
-      .sort(() => Math.random() - 0.5)
-      .forEach((player1) => {
-        gamePlayers
-          .sort(() => Math.random() - 0.5)
-          .forEach((player2) => {
-            const pairKey = `${player1.id}-${player2.id}`;
-            const reversePairKey = `${player2.id}-${player1.id}`;
-
-            if (
-              player1.id !== player2.id &&
-              !pairs[pairKey] &&
-              !pairs[reversePairKey]
-            ) {
-              newGeneratedPairs.push([player1.id, player2.id]);
-            }
-          });
-      });
-  }
-
   generatedPairs.forEach((pair) => {
     const player1 = gamePlayers[pair[0]];
     const player2 = gamePlayers[pair[1]];
@@ -272,6 +228,8 @@ export const addGameToTournament = async () => {
 };
 
 const getPlayersPairs = (count) => {
+  let pairs = [];
+
   if (count === 2) return [[0, 1]];
   if (count === 3)
     return [
@@ -300,5 +258,20 @@ const getPlayersPairs = (count) => {
       [2, 4],
       [0, 3],
     ];
-  return [[0,1],[0,2],[0,3],[0,4],[0,5],[1,2],[1,3],[1,4],[1,5],[2,3],[2,4],[2,5],[3,4],[3,5],[4,5]];
+
+  for (let x = 0; x < count; x++) {
+    for (let y = x + 1; y < count; y++) {
+      pairs.push([x, y]);
+    }
+  }
+
+  return shufflePairs(pairs);
 };
+
+function shufflePairs(pairs) {
+  for (let i = pairs.length - 1; i > 0; i--) {
+    let j = Math.floor(Math.random() * (i + 1));
+    [pairs[i], pairs[j]] = [pairs[j], pairs[i]];
+  }
+  return pairs;
+}
