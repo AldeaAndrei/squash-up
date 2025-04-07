@@ -65,6 +65,16 @@ export async function GET(req, { params }) {
     percentWon /= gamesPlayed;
     percentLost /= gamesPlayed;
 
+    const bestElo = eloHistory.reduce(
+      (max, h) => (h.elo > max ? h.elo : max),
+      eloHistory[0]?.elo ?? 0n
+    );
+
+    const worstElo = eloHistory.reduce(
+      (min, h) => (h.elo < min ? h.elo : min),
+      eloHistory[0]?.elo ?? 0n
+    );
+
     const statistics = {
       mostWinsAgainstName: playerHash[mostFrequentNumber(wonAgainst).number],
       mostLossesAgainstName: playerHash[mostFrequentNumber(lostAgainst).number],
@@ -73,6 +83,8 @@ export async function GET(req, { params }) {
       gamesPlayed: gamesPlayed,
       percentWon: percentWon,
       percentLost: percentLost,
+      bestElo: bestElo,
+      worstElo: worstElo,
     };
 
     return new Response(safeJson(statistics), {

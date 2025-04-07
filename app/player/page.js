@@ -55,9 +55,21 @@ export default function PlayerPage() {
           </h1>
           <div className="">
             {playerData?.elo && (
-              <p>
-                ELO <span className="font-semibold">{playerData.elo}</span>
-              </p>
+              <div>
+                <p>
+                  ELO <span className="font-semibold">{playerData.elo}</span>
+                </p>
+                <p>
+                  ↑{" "}
+                  <span className="font-semibold text-sm">{stats.bestElo}</span>
+                </p>
+                <p>
+                  ↓{" "}
+                  <span className="font-semibold text-sm">
+                    {stats.worstElo}
+                  </span>
+                </p>
+              </div>
             )}
           </div>
           {stats && (
