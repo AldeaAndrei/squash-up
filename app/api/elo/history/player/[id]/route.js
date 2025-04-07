@@ -14,7 +14,7 @@ export async function GET(req, { params }) {
 
     const eloHistory = await prisma.elo_histories.findMany({
       where: { player_id: id },
-      orderBy: [{ round_id: "asc" }, { id: "asc" }],
+      orderBy: [{ round_id: "desc" }, { id: "desc" }],
       select: {
         round_id: true,
         player_id: true,
@@ -24,7 +24,42 @@ export async function GET(req, { params }) {
       },
     });
 
-    return new Response(safeJson(eloHistory), {
+    let ids = new Set();
+
+    eloHistory.map((history) => {
+      ids.add(history.winner_id);
+      ids.add(history.loser_id);
+    });
+
+    const players = await prisma.players.findMany({
+      select: { id: true, name: true },
+      where: {
+        id: {
+          in: Array.from(ids),
+        },
+      },
+    });
+
+    const playerHash = {};
+    players.forEach((player) => {
+      playerHash[player.id] = player.name;
+    });
+
+    let historyResponse = [];
+
+    eloHistory.forEach((history) => {
+      historyResponse.push({
+        round_id: history.round_id,
+        opponent:
+          history.winner_id === history.player_id
+            ? playerHash[history.loser_id]
+            : playerHash[history.winner_id],
+        elo: history.elo,
+        won: history.winner_id == id,
+      });
+    });
+
+    return new Response(safeJson(historyResponse), {
       status: 200,
     });
   } catch (err) {
