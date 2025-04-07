@@ -15,6 +15,8 @@ model elo_histories {
   round_id   BigInt?
   date       DateTime? @db.Timestamptz(6)
   elo        BigInt?
+  winner_id  BigInt?
+  loser_id   BigInt?
   players    players?  @relation(fields: [player_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   rounds     rounds?   @relation(fields: [round_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }

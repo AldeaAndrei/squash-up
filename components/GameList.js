@@ -9,56 +9,85 @@ export default function GameList(params) {
   const [games, setGames] = useState([]);
   const [players, setPlayers] = useState([]);
   const [tournament, setTournament] = useState();
+  const [eloHistory, setEloHistory] = useState();
   const [isReadOnly, setIsReadOnly] = useState(false);
 
-  useEffect(() => {
-    const fetchTournament = async () => {
-      try {
-        const response = await fetch(`/api/tournaments/${params.tournamentId}`);
+  const fetchTournament = async () => {
+    try {
+      const response = await fetch(`/api/tournaments/${params.tournamentId}`);
 
-        if (response.ok) {
-          const data = await response.json();
-          setTournament(data.tournament);
+      if (response.ok) {
+        const data = await response.json();
+        setTournament(data.tournament);
 
-          const now = new Date(); // Get current date and time
-          const twentyFourHoursAgo = new Date(
-            now.getTime() - 24 * 60 * 60 * 1000
-          ); // Subtract 24 hours
-          setIsReadOnly(
-            new Date(data.tournament.created_at) < twentyFourHoursAgo
-          );
-        } else {
-          console.error("Failed to fetch tournament data");
-        }
-      } catch (error) {
-        console.error("Error fetching tournament data:", error);
-      }
-    };
-
-    const fetchTournamentPlayers = async () => {
-      try {
-        const response = await fetch(
-          `/api/tournaments/${params.tournamentId}/players`
+        const now = new Date(); // Get current date and time
+        const twentyFourHoursAgo = new Date(
+          now.getTime() - 24 * 60 * 60 * 1000
+        ); // Subtract 24 hours
+        setIsReadOnly(
+          new Date(data.tournament.created_at) < twentyFourHoursAgo
         );
-
-        if (response.ok) {
-          const data = await response.json();
-          setPlayers(
-            data.players.reduce((map, player) => {
-              map[player.id] = player.name;
-              return map;
-            }, {})
-          );
-        } else {
-          console.error("Failed to fetch tournament players data");
-        }
-      } catch (error) {
-        console.error("Error fetching tournament players data:", error);
+      } else {
+        console.error("Failed to fetch tournament data");
       }
-    };
+    } catch (error) {
+      console.error("Error fetching tournament data:", error);
+    }
+  };
 
-    fetchTournamentPlayers();
-    fetchTournament();
+  const fetchTournamentPlayers = async () => {
+    try {
+      const response = await fetch(
+        `/api/tournaments/${params.tournamentId}/players`
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        setPlayers(
+          data.players.reduce((map, player) => {
+            map[player.id] = player.name;
+            return map;
+          }, {})
+        );
+      } else {
+        console.error("Failed to fetch tournament players data");
+      }
+    } catch (error) {
+      console.error("Error fetching tournament players data:", error);
+    }
+  };
+
+  const fetchTournamentEloHistory = async () => {
+    try {
+      const response = await fetch(
+        `/api/elo/history?tournamentId=${params.tournamentId}`
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        const eloHash = {};
+
+        data.forEach((eloData) => {
+          eloHash[`${eloData.round_id}-${eloData.player_id}`] = eloData.elo;
+        });
+
+        setEloHistory(eloHash);
+      } else {
+        console.error("Failed to fetch tournament players data");
+      }
+    } catch (error) {
+      console.error("Error fetching tournament players data:", error);
+    }
+  };
+
+  const fetchData = async () => {
+    await fetchTournamentPlayers();
+    await fetchTournament();
+    await fetchTournamentEloHistory();
+  };
+
+  useEffect(() => {
+    fetchData();
   }, []);
 
   useEffect(() => {
@@ -86,9 +115,15 @@ export default function GameList(params) {
           <p>Turneul este mai vechi de 24h si nu poate fi modificat</p>
         </div>
       )}
-      {/* <div>
-        <CalculateEloButton tournamentId={params.tournamentId} />
-      </div> */}
+      <div>
+        {!isReadOnly && (
+          <CalculateEloButton
+            tournamentId={params.tournamentId}
+            fetchData={fetchData}
+            isDisabled={isReadOnly}
+          />
+        )}
+      </div>
       {tournament &&
         tournament.games.map((game, index) => {
           return (
@@ -108,6 +143,7 @@ export default function GameList(params) {
                       key={index}
                       round={round}
                       players={players}
+                      eloHistory={eloHistory}
                       player1ValuesProps={round.sets.map(
                         (set) => set.player_1_score
                       )}

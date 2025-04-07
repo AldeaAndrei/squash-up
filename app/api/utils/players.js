@@ -42,7 +42,7 @@ export async function getPlayersIdsForRound(roundId) {
 
 export async function getPlayersEloDetails(playersIds) {
   if (!Array.isArray(playersIds) || playersIds.length === 0) {
-    throw new Error("Invalid playersIds: must be a non-empty array.");
+    return null;
   }
 
   const players = await prisma.players.findMany({
@@ -55,8 +55,24 @@ export async function getPlayersEloDetails(playersIds) {
       id: true,
       name: true,
       elo: true,
+      elo_histories: {
+        orderBy: {
+          id: "desc",
+        },
+        take: 1,
+        select: {
+          elo: true,
+        },
+      },
     },
   });
 
-  return players;
+  return players.map((player) => ({
+    id: player.id,
+    name: player.name,
+    elo:
+      player.elo_histories.length > 0
+        ? Number(player.elo_histories[0].elo)
+        : Number(player.elo),
+  }));
 }

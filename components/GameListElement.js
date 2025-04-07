@@ -9,6 +9,7 @@ export default function gameListElement({
   isReadOnly,
   player1ValuesProps,
   player2ValuesProps,
+  eloHistory,
 }) {
   const [winner, setWinner] = useState(null);
 
@@ -156,23 +157,35 @@ export default function gameListElement({
     return () => clearTimeout(delayDebounceFn);
   }, [player1Values, player2Values]);
 
-  const parseElo = (id, name) => {
-    if (eloData[`${id}-${name}`]?.change == null) return <></>;
+  // DEPRECATED - remove
+  // const parseElo = (id, name) => {
+  //   if (eloData[`${id}-${name}`]?.change == null) return <></>;
+
+  //   return (
+  //     <div className="align-middle text-sm">
+  //       <span className="mr-2">{eloData[`${id}-${name}`]?.elo}</span>
+  //       <span
+  //         className={
+  //           eloData[`${id}-${name}`]?.change < 0
+  //             ? "text-[#c54242]"
+  //             : "text-[#84c542]"
+  //         }
+  //       >
+  //         {eloData[`${id}-${name}`]?.change < 0
+  //           ? `${eloData[`${id}-${name}`]?.change}`
+  //           : `+${eloData[`${id}-${name}`]?.change}`}
+  //       </span>
+  //     </div>
+  //   );
+  // };
+
+  const parseElo = (id, _name) => {
+    const elo = eloHistory[`${round.id}-${id}`];
+    if (elo == null) return <></>;
 
     return (
       <div className="align-middle text-sm">
-        <span className="mr-2">{eloData[`${id}-${name}`]?.elo}</span>
-        <span
-          className={
-            eloData[`${id}-${name}`]?.change < 0
-              ? "text-[#c54242]"
-              : "text-[#84c542]"
-          }
-        >
-          {eloData[`${id}-${name}`]?.change < 0
-            ? `${eloData[`${id}-${name}`]?.change}`
-            : `+${eloData[`${id}-${name}`]?.change}`}
-        </span>
+        <span className="mr-2">{elo}</span>
       </div>
     );
   };

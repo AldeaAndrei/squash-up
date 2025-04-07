@@ -6,18 +6,22 @@
 // Example:
 //   return new Response(safeJson({ data }), { status: 200 });
 export function safeJson(data) {
-  const convertBigInts = (obj) => {
-    if (Array.isArray(obj)) return obj.map(convertBigInts);
+  const convertBigIntsAndDates = (obj) => {
+    if (Array.isArray(obj)) return obj.map(convertBigIntsAndDates);
     if (obj && typeof obj === "object") {
       return Object.fromEntries(
         Object.entries(obj).map(([k, v]) => [
           k,
-          typeof v === "bigint" ? v.toString() : convertBigInts(v),
+          typeof v === "bigint"
+            ? v.toString() // Convert BigInt to string
+            : v instanceof Date
+            ? v.toISOString() // Convert Date to ISO string
+            : convertBigIntsAndDates(v), // Recursively process nested objects
         ])
       );
     }
     return obj;
   };
 
-  return JSON.stringify(convertBigInts(data));
+  return JSON.stringify(convertBigIntsAndDates(data));
 }
