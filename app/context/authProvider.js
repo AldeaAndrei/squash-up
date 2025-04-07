@@ -2,9 +2,11 @@
 
 import { useEffect } from "react";
 import { useAuthStore } from "../store/authStore";
+import { usePathname } from "next/navigation";
 
 export default function AuthProvider({ children }) {
   const { setPlayer } = useAuthStore();
+  const pathname = usePathname();
 
   useEffect(() => {
     async function fetchPlayer() {
@@ -13,10 +15,13 @@ export default function AuthProvider({ children }) {
 
       if (data.playerId) {
         setPlayer(data.playerId);
+      } else {
+        setPlayer(null);
       }
     }
+
     fetchPlayer();
-  }, [setPlayer]);
+  }, [pathname, setPlayer]);
 
   return children;
 }
