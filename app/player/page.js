@@ -59,16 +59,22 @@ export default function PlayerPage() {
                 <p>
                   ELO <span className="font-semibold">{playerData.elo}</span>
                 </p>
-                <p>
-                  ↑{" "}
-                  <span className="font-semibold text-sm">{stats.bestElo}</span>
-                </p>
-                <p>
-                  ↓{" "}
-                  <span className="font-semibold text-sm">
-                    {stats.worstElo}
-                  </span>
-                </p>
+                {stats && (
+                  <p>
+                    ↑{" "}
+                    <span className="font-semibold text-sm">
+                      {stats.bestElo}
+                    </span>
+                  </p>
+                )}
+                {stats && (
+                  <p>
+                    ↓{" "}
+                    <span className="font-semibold text-sm">
+                      {stats.worstElo}
+                    </span>
+                  </p>
+                )}
               </div>
             )}
           </div>
