@@ -76,3 +76,32 @@ export async function getPlayersEloDetails(playersIds) {
         : Number(player.elo),
   }));
 }
+
+export async function updatePlayerNames(players) {
+  const databaseIds = players
+    .map((player) => player.database_id)
+    .filter((id) => id != null)
+    .map((id) => BigInt(id));
+
+  const existingPlayers = await prisma.players.findMany({
+    where: {
+      id: { in: databaseIds },
+    },
+    select: {
+      id: true,
+      name: true,
+    },
+  });
+
+  const playerNamesMap = new Map(
+    existingPlayers.map((player) => [player.id, player.name])
+  );
+
+  players.forEach((player) => {
+    if (playerNamesMap.has(player.database_id)) {
+      player.name = playerNamesMap.get(player.database_id);
+    }
+  });
+
+  return players;
+}

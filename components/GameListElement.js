@@ -91,14 +91,14 @@ export default function gameListElement({
 
   const getEloChanges = async () => {
     try {
-      const response = await fetch(`/api/elo/rounds/${round.id}`);
+      const response = await fetch(`/api/elo/history/rounds/${round.id}`);
 
       if (response.ok) {
         const data = await response.json();
 
         setEloData(
-          data.elo.reduce((map, d) => {
-            map[`${d.id}-${d.name}`] = { elo: d.elo, change: d.elo_change };
+          data.reduce((map, d) => {
+            map[`${d.id}-${d.name}`] = { elo: d.elo, change: 0 };
             return map;
           }, {})
         );
@@ -179,7 +179,7 @@ export default function gameListElement({
   //   );
   // };
 
-  const parseElo = (id, _name) => {
+  const parseElo = (id) => {
     const elo = eloHistory[`${round.id}-${id}`];
     if (elo == null) return <></>;
 
@@ -198,14 +198,14 @@ export default function gameListElement({
             {round.player_1_name ?? players[round.player_1_id]}
             {winner === 1 && <WinnerIcon sx={{ color: yellow[500] }} />}
           </span>
-          {eloData && parseElo(round.player_1_id, round.player_1_name)}
+          {eloHistory && parseElo(round.player_1_id)}
         </div>
         <div className="flex-col text-center flex-1 max-h-12 overflow-y-scroll scrollbar-hide">
           <span>
             {round.player_2_name ?? players[round.player_2_id]}{" "}
             {winner === 2 && <WinnerIcon sx={{ color: yellow[500] }} />}
           </span>
-          {eloData && parseElo(round.player_2_id, round.player_2_name)}
+          {eloHistory && parseElo(round.player_2_id)}
         </div>
       </div>
       <div className="flex justify-center items-center w-[80%] h-[1px] bg-slate-400 rounded-full my-3" />

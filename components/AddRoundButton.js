@@ -4,11 +4,13 @@ import { useRouter, usePathname } from "next/navigation";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import { addGameToTournament } from "@/app/utils/utils";
 import { useEffect, useState } from "react";
+import { useAuthStore } from "@/app/store/authStore";
 
 export default function AddRoundButton({ noText, tournamentId }) {
   const router = useRouter();
   const pathname = usePathname();
   const [isReadOnly, setIsReadOnly] = useState(false);
+  const { player } = useAuthStore();
 
   useEffect(() => {
     const fetchTournament = async () => {
@@ -37,7 +39,7 @@ export default function AddRoundButton({ noText, tournamentId }) {
   }, []);
 
   const addRoundAndRefresh = async () => {
-    addGameToTournament().then((res) => {
+    addGameToTournament(player, tournamentId).then((res) => {
       const { id, error } = res;
 
       if (error) return;

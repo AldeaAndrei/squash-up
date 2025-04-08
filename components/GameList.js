@@ -60,7 +60,7 @@ export default function GameList(params) {
   const fetchTournamentEloHistory = async () => {
     try {
       const response = await fetch(
-        `/api/elo/history?tournamentId=${params.tournamentId}`
+        `/api/elo/history/tournaments/${params.tournamentId}`
       );
 
       if (response.ok) {
@@ -73,10 +73,10 @@ export default function GameList(params) {
 
         setEloHistory(eloHash);
       } else {
-        console.error("Failed to fetch tournament players data");
+        console.error("Failed to fetch tournament elo history data");
       }
     } catch (error) {
-      console.error("Error fetching tournament players data:", error);
+      console.error("Error fetching tournament elo history data:", error);
     }
   };
 

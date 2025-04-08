@@ -1,24 +1,58 @@
 import sql from "@/db";
-import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
+import { createTournament } from "../utils/tournamentCreator";
+import { validatePlayers } from "../utils/validations";
+import { updatePlayerNames } from "../utils/players";
+import { safeJson } from "../utils/json";
 
-export async function POST(request) {
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-  );
-
+export async function POST(request, { params }) {
   try {
-    const { data, error } = await supabase
-      .from("tournaments")
-      .insert([{}])
-      .select();
+    const body = await request.json();
 
-    if (error) {
-      throw new Error(error.message);
+    let players = body.players;
+    const creatorPlayer = body.creator_player;
+    const gameType = body.game_type ?? 3;
+
+    if (!creatorPlayer) {
+      return NextResponse.json(
+        { message: "Creator player must be present" },
+        { status: 400 }
+      );
     }
 
-    return NextResponse.json(data, { status: 200 });
+    if (!players) {
+      return NextResponse.json(
+        { message: "Players must be present" },
+        { status: 400 }
+      );
+    } else if (players.length < 2) {
+      return NextResponse.json(
+        { message: "A tournament needs at least 2 players" },
+        { status: 400 }
+      );
+    } else {
+      const validation = await validatePlayers(players);
+
+      if (validation.errors) {
+        return NextResponse.json(
+          { messages: validation.errors },
+          { status: 400 }
+        );
+      }
+    }
+
+    players = await updatePlayerNames(players);
+
+    const result = await createTournament(players, creatorPlayer, gameType);
+
+    if (result.success) {
+      return NextResponse.json(
+        { tournament_id: result.tournamentId.toString() },
+        { status: 200 }
+      );
+    } else {
+      return NextResponse.json({ message: result.error }, { status: 500 });
+    }
   } catch (error) {
     return NextResponse.json({ message: error.message }, { status: 400 });
   }
@@ -27,12 +61,12 @@ export async function POST(request) {
 export async function GET() {
   try {
     const tournaments = await sql`
-      SELECT 
+      SELECT
         DISTINCT tournaments.id as id, tournaments.created_at as created_at, tournaments.deleted as deleted,
         rounds.player_1_name as player_1_name, rounds.player_2_name as player_2_name, rounds.player_1_id as player_1_id, rounds.player_2_id as player_2_id
-      FROM tournaments 
-      JOIN games ON games.tournament_id = tournaments.id 
-      JOIN rounds ON rounds.game_id = games.id 
+      FROM tournaments
+      JOIN games ON games.tournament_id = tournaments.id
+      JOIN rounds ON rounds.game_id = games.id
       WHERE tournaments.deleted = FALSE
     `;
 
