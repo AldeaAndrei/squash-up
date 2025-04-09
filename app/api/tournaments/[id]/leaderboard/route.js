@@ -1,122 +1,96 @@
+import prisma from "@/app/lib/prisma";
 import { NextResponse } from "next/server";
-import sql from "@/db";
 
 export async function GET(request, { params }) {
   const { id } = await params;
+
   try {
-    // const playersData =
-    //   await sql`select distinct players.id, players.name from players
-    //     join rounds on players.id = rounds.player_1_id OR players.id = rounds.player_2_id
-    //     join games on rounds.game_id = games.id
-    //     where games.tournament_id = ${id}`;
+    const roundsData = await prisma.rounds.findMany({
+      where: {
+        games: {
+          tournament_id: BigInt(id),
+        },
+      },
+      select: {
+        player_1_name: true,
+        player_2_name: true,
+        game_id: true,
+        sets: true,
+      },
+    });
 
-    const setsData =
-      await sql`select player_1_name, player_1_score, player_1_id, player_2_name, player_2_score, player_2_id, game_id, round_id from sets
-        join rounds on rounds.id = sets.round_id
-        join games on rounds.game_id = games.id
-        where games.tournament_id = ${id}`;
+    let players = {};
+    let wins = {};
 
-    // console.log(playersData);
-    // console.log(
-    //   setsData
-    //     .map((data) => [
-    //       { id: data.player_1_id, name: data.player_1_name },
-    //       { id: data.player_2_id, name: data.player_2_name },
-    //     ])
-    //     .flat()
-    // );
+    roundsData.forEach((round) => {
+      let winsPlayer1 = 0;
+      let winsPlayer2 = 0;
 
-    const players = setsData
-      .map((data) => [
-        { id: data.player_1_id, name: data.player_1_name },
-        { id: data.player_2_id, name: data.player_2_name },
-      ])
-      .flat()
-      .reduce((map, player) => {
-        map[`${player.name}-${player.id}`] = player.name;
-        return map;
-      }, {});
+      let totalPlayer1 = 0;
+      let totalPlayer2 = 0;
 
-    let leaderboard = {};
+      round.sets.forEach((set) => {
+        totalPlayer1 += set.player_1_score;
+        totalPlayer2 += set.player_2_score;
 
-    const minRoundsWin = Math.ceil(
-      parseInt(findMaxOccurrence(setsData.map((d) => d.round_id))) / 2.0
-    );
+        if (set.player_1_score > set.player_2_score) winsPlayer1 += 1;
+        else if (set.player_2_score > set.player_1_score) winsPlayer2 += 1;
+      });
 
-    setsData.forEach((set) => {
-      const k1 = `${set.player_1_name ?? players[set.player_1_id]}-${
-        set.player_1_id
-      }`;
-      const k2 = `${set.player_2_name ?? players[set.player_2_id]}-${
-        set.player_2_id
-      }`;
-      if (!leaderboard[k1])
-        leaderboard[k1] = {
-          name: players[k1],
-          id: set.player_1_id,
-          rounds: [],
-          total: 0,
+      winsPlayer1 = winsPlayer1 > round.sets.length / 2.0 ? 1 : 0;
+      winsPlayer2 = winsPlayer2 > round.sets.length / 2.0 ? 1 : 0;
+
+      if (winsPlayer1 > winsPlayer2) {
+        if (!wins[round.player_1_name])
+          wins[round.player_1_name] = [round.player_2_name];
+        else wins[round.player_1_name].push(round.player_2_name);
+      }
+      if (winsPlayer2 > winsPlayer1) {
+        if (!wins[round.player_2_name])
+          wins[round.player_2_name] = [round.player_1_name];
+        else wins[round.player_2_name].push(round.player_1_name);
+      }
+
+      if (!players[round.player_1_name]) {
+        players[round.player_1_name] = {
+          name: round.player_1_name,
+          total: totalPlayer1,
+          rounds: winsPlayer1,
         };
+      } else {
+        players[round.player_1_name].total += totalPlayer1;
+        players[round.player_1_name].rounds += winsPlayer1;
+      }
 
-      if (!leaderboard[k2])
-        leaderboard[k2] = {
-          name: players[k2],
-          id: set.player_2_id,
-          rounds: [],
-          total: 0,
+      if (!players[round.player_2_name]) {
+        players[round.player_2_name] = {
+          name: round.player_2_name,
+          total: totalPlayer2,
+          rounds: winsPlayer2,
         };
-
-      if (set.player_1_score > set.player_2_score) {
-        leaderboard[k1].rounds.push(set.round_id);
-        leaderboard[k1].total += set.player_1_score;
-      } else if (set.player_2_score > set.player_1_score) {
-        leaderboard[k2].rounds.push(set.round_id);
-        leaderboard[k2].total += set.player_2_score;
+      } else {
+        players[round.player_2_name].total += totalPlayer2;
+        players[round.player_2_name].rounds += winsPlayer2;
       }
     });
 
-    let response = [];
-
-    Object.keys(leaderboard).forEach((player) => {
-      leaderboard[player].rounds = filterUniqueByFrequency(
-        leaderboard[player].rounds,
-        minRoundsWin
-      ).length;
-
-      response.push(leaderboard[player]);
+    let leaderboard = Object.values(players).map((player) => {
+      return { ...player };
     });
 
-    response.sort((a, b) => {
-      if (a.rounds !== b.rounds) {
-        return b.rounds - a.rounds;
-      }
-      return b.total - a.total;
+    leaderboard.sort((a, b) => {
+      if (a.rounds !== b.rounds) return b.rounds - a.rounds;
+      else if (a.total !== b.total) return b.total - a.total;
+
+      const aWin = wins[a.name]?.includes(b.name) ? 1 : 0;
+      const bWin = wins[b.name]?.includes(a.name) ? 1 : 0;
+
+      return bWin - aWin;
     });
 
-    return NextResponse.json({ leaderboard: response }, { status: 200 });
+    return NextResponse.json({ leaderboard }, { status: 200 });
   } catch (error) {
-    return NextResponse.json({ error: error }, { status: 400 });
+    console.error("Leaderboard generation error:", error);
+    return NextResponse.json({ error: error.message }, { status: 400 });
   }
-}
-
-function filterUniqueByFrequency(arr, N) {
-  // Count occurrences of each number
-  const countMap = arr.reduce((map, num) => {
-    map[num] = (map[num] || 0) + 1;
-    return map;
-  }, {});
-
-  // Get only unique numbers that appear at least N times
-  return [...new Set(arr.filter((num) => countMap[num] >= N))];
-}
-
-function findMaxOccurrence(arr) {
-  // Count occurrences
-  const countMap = arr.reduce((map, num) => {
-    map[num] = (map[num] || 0) + 1;
-    return map;
-  }, {});
-
-  // Find the maximum occurrence
-  return Math.max(...Object.values(countMap));
 }

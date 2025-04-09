@@ -31,9 +31,15 @@ export default function PlayersList() {
             }
           );
 
-          const players = await response.json();
+          let playersFetched = await response.json();
 
-          setSimilarPlayers(players);
+          playersFetched = playersFetched.filter(
+            (player) =>
+              !players.map((p) => p.database_id).includes(player.id) &&
+              !players.map((p) => p.name).includes(player.name)
+          );
+
+          setSimilarPlayers(playersFetched);
         } catch (error) {
           console.error("Error fetching players:", error);
         }

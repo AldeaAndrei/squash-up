@@ -1,6 +1,5 @@
 import prisma from "@/app/lib/prisma";
 import { safeJson } from "../../utils/json";
-import sql from "@/db";
 import { NextResponse } from "next/server";
 
 export async function GET(request, { params }) {
@@ -37,12 +36,18 @@ export async function GET(request, { params }) {
 export async function DELETE(request, { params }) {
   const { id } = await params;
 
-  const tournament = await sql`
-    UPDATE tournaments
-    SET deleted = true
-    WHERE id = ${id}
-    RETURNING *
-  `;
+  try {
+    const tournament = await prisma.tournaments.update({
+      where: { id: BigInt(id) },
+      data: { deleted: true },
+    });
 
-  return NextResponse.json({ tournament }, { status: 200 });
+    return NextResponse.json(
+      { tournament_id: tournament.id.toString() },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error(error);
+    return NextResponse.json({ error: error.message }, { status: 400 });
+  }
 }

@@ -1,21 +1,32 @@
-import sql from "@/db";
+import prisma from "@/app/lib/prisma";
 import { NextResponse } from "next/server";
+import { validateId } from "../../utils/validations";
 
 export async function GET(req, { params }) {
   try {
     const { id } = await params;
 
-    if (!id) {
-      return NextResponse.json({ error: "ID is required" }, { status: 400 });
+    const idValidation = validateId(id);
+
+    if (!idValidation.success) {
+      return NextResponse.json({ error: idValidation.error }, { status: 400 });
     }
 
-    const player = await sql`
-        SELECT id, name, elo, RANK() OVER (ORDER BY elo DESC) AS rank FROM players
-        WHERE id = ${id}
-        LIMIT 1
-      `;
+    const playerData = await prisma.players.findUnique({
+      where: { id: id },
+      select: {
+        id: true,
+        name: true,
+        elo: true,
+      },
+    });
 
-    return NextResponse.json({ player: player[0] ?? null }, { status: 200 });
+    const player = {
+      ...playerData,
+      id: playerData.id.toString(),
+    };
+
+    return NextResponse.json({ player }, { status: 200 });
   } catch (error) {
     console.error(error);
     return NextResponse.json(

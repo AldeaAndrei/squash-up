@@ -1,9 +1,9 @@
 "use server";
 
 import bcrypt from "bcrypt";
-import sql from "@/db";
 import { SignupFormSchema } from "../lib/definitions";
 import { createSession } from "../lib/session";
+import prisma from "../lib/prisma";
 
 export async function signup(state, formData) {
   const validationResults = SignupFormSchema.safeParse({
@@ -28,11 +28,17 @@ export async function signup(state, formData) {
       : [],
   };
 
-  const usernameDB = await sql`
-    SELECT username FROM players WHERE username = ${formData.get("username")}
-  `;
+  const player = await prisma.players.findUnique({
+    where: {
+      username: formData.get("username"),
+    },
+    select: {
+      username: true,
+    },
+  });
 
-  if (usernameDB?.length > 0) errors.username.push("Username-ul exista deja");
+  if (player.username?.length > 0)
+    errors.username.push("Username-ul exista deja");
 
   if (formData.get("password") != formData.get("passwordConfirmation"))
     errors.passwordConfirmation.push("Parola este diferita");
@@ -52,19 +58,24 @@ export async function signup(state, formData) {
   const hashedPassword = await bcrypt.hash(password, 10);
 
   try {
-    const newPlayerId = await sql`
-      INSERT INTO players (name, username, password)
-      VALUES (${name}, ${username}, ${hashedPassword})
-      RETURNING id;
-    `;
+    const newPlayer = await prisma.players.create({
+      data: {
+        name,
+        username,
+        password: hashedPassword,
+      },
+      select: {
+        id: true,
+      },
+    });
 
-    const success = await createSession(newPlayerId[0].id);
+    const success = await createSession(newPlayer.id.toString());
 
     if (!success) return { errors: { login: "Ceva nu a mers bine." } };
 
     return {
       message: "Log In successful!",
-      playerId: newPlayerId[0].id,
+      playerId: newPlayer.id.toString(),
       success,
     };
   } catch (error) {

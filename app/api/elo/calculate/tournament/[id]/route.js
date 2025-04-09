@@ -41,7 +41,7 @@ export async function GET(req, { params }) {
     let currentElo = null;
     let eloHistories = [];
     let eloChangeData = [];
-    let playersIdsHash = {};
+    let playersHash = {};
 
     // Calculate ELO for this tournament
     const result = await calculateEloForTournament(
@@ -63,36 +63,47 @@ export async function GET(req, { params }) {
     // Update players ELO to the latest
     players.forEach((player) => {
       const playerKey = `${player.id}-${player.name}`;
-      playersIdsHash[playerKey] = player.id;
+      playersHash[playerKey] = { id: player.id, name: player.name };
     });
 
     for (const playerKey of Object.keys(currentElo)) {
+      if (!playersHash[playerKey]) continue;
+
       eloChangeData.push({
-        id: playersIdsHash[playerKey],
+        id: playersHash[playerKey].id,
+        name: playersHash[playerKey].name,
         elo: currentElo[playerKey],
       });
     }
 
     await Promise.all(
-      eloChangeData.map(({ id, elo }) =>
-        prisma.players.update({
-          where: { id: BigInt(id) },
-          data: { elo },
-        })
-      )
+      eloChangeData
+        .filter(({ id }) => id != null)
+        .map(({ id, elo }) =>
+          prisma.players.update({
+            where: { id: BigInt(id) },
+            data: { elo },
+          })
+        )
     );
 
     // Insert all ELO histories
     await prisma.elo_histories.createMany({
-      data: eloHistories.map((entry) => ({
-        player_id: BigInt(entry.player_id),
-        round_id: BigInt(entry.round_id),
-        elo: entry.elo,
-        winner_id: BigInt(entry.winner_id),
-        loser_id: BigInt(entry.loser_id),
-      })),
+      data: eloHistories
+        .filter(
+          ({ player_id, round_id }) => player_id != null && round_id != null
+        )
+        .map((entry) => ({
+          player_id: BigInt(entry.player_id),
+          round_id: BigInt(entry.round_id),
+          elo: entry.elo,
+          winner_id: entry.winner_id ? BigInt(entry.winner_id) : null,
+          loser_id: entry.loser_id ? BigInt(entry.loser_id) : null,
+        })),
       skipDuplicates: true,
     });
+
+    console.log(eloHistories);
 
     return new NextResponse(safeJson({ eloChangeData }, { status: 200 }));
   } catch (err) {

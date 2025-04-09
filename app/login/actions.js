@@ -1,7 +1,6 @@
 "use server";
 
 import bcrypt from "bcrypt";
-import sql from "@/db";
 import { LoginFormSchema } from "../lib/definitions";
 import { createSession } from "../lib/session";
 
@@ -24,28 +23,34 @@ export async function login(state, formData) {
   const { username, password } = validationResults.data;
 
   try {
-    const player = await sql`
-        SELECT id, password FROM players WHERE username=${username};
-    `;
+    const player = await prisma.players.findUnique({
+      where: {
+        username: username,
+      },
+      select: {
+        id: true,
+        password: true,
+      },
+    });
 
-    if (!player || player.length === 0)
+    if (!player)
       return {
         errors: { login: "Nu exista jucator cu acest nume sau parola" },
       };
 
-    const match = await bcrypt.compare(password, player[0].password);
+    const match = await bcrypt.compare(password, player.password);
     if (!match)
       return {
         errors: { login: "Nu exista jucator cu acest nume sau parola" },
       };
 
-    const success = await createSession(player[0].id);
+    const success = await createSession(player.id.toString());
 
     if (!success) return { errors: { login: "Ceva nu a mers bine." } };
 
     return {
       message: "Log In successful!",
-      playerId: player[0].id,
+      playerId: player.id.toString(),
       success,
     };
   } catch (error) {

@@ -1,24 +1,63 @@
-import sql from "@/db";
+import prisma from "@/app/lib/prisma";
+import { NextResponse } from "next/server";
 
 export async function GET(request) {
   const { searchParams } = new URL(request.url);
   const name = searchParams.get("name");
 
   try {
-    let data;
+    let players;
 
     if (name) {
-      data =
-        await sql`SELECT id, name, elo, RANK() OVER (ORDER BY elo DESC) AS rank FROM players WHERE name ILIKE ANY(ARRAY[${name} || '%', '% ' || ${name} || '%'])`;
+      players = await prisma.players.findMany({
+        where: {
+          OR: [
+            {
+              name: {
+                startsWith: name,
+                mode: "insensitive",
+              },
+            },
+            {
+              name: {
+                contains: ` ${name}`,
+                mode: "insensitive",
+              },
+            },
+          ],
+        },
+        orderBy: {
+          elo: "desc",
+        },
+        select: {
+          id: true,
+          name: true,
+          elo: true,
+        },
+      });
     } else {
-      data =
-        await sql`SELECT id, name, elo, RANK() OVER (ORDER BY elo DESC) AS rank FROM players`;
+      players = await prisma.players.findMany({
+        orderBy: {
+          elo: "desc",
+        },
+        select: {
+          id: true,
+          name: true,
+          elo: true,
+        },
+      });
     }
 
-    return new Response(JSON.stringify(data), { status: 200 });
+    // Add manual ranking
+    const rankedPlayers = players.map((player, index) => ({
+      ...player,
+      id: player.id.toString(),
+      rank: index + 1,
+    }));
+
+    return NextResponse.json(rankedPlayers, { status: 200 });
   } catch (err) {
-    return new Response(JSON.stringify({ error: err.message }), {
-      status: 500,
-    });
+    console.error(err);
+    return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }

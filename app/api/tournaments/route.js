@@ -1,9 +1,7 @@
-import sql from "@/db";
 import { NextResponse } from "next/server";
 import { createTournament } from "../utils/tournamentCreator";
 import { validatePlayers } from "../utils/validations";
 import { updatePlayerNames } from "../utils/players";
-import { safeJson } from "../utils/json";
 
 export async function POST(request, { params }) {
   try {
@@ -60,43 +58,46 @@ export async function POST(request, { params }) {
 
 export async function GET() {
   try {
-    const tournaments = await sql`
-      SELECT
-        DISTINCT tournaments.id as id, tournaments.created_at as created_at, tournaments.deleted as deleted,
-        rounds.player_1_name as player_1_name, rounds.player_2_name as player_2_name, rounds.player_1_id as player_1_id, rounds.player_2_id as player_2_id
-      FROM tournaments
-      JOIN games ON games.tournament_id = tournaments.id
-      JOIN rounds ON rounds.game_id = games.id
-      WHERE tournaments.deleted = FALSE
-    `;
+    const tournaments = await prisma.tournaments.findMany({
+      where: {
+        deleted: false,
+      },
+      select: {
+        id: true,
+        created_at: true,
+        deleted: true,
+        games: {
+          select: {
+            rounds: {
+              select: {
+                player_1_name: true,
+                player_2_name: true,
+              },
+            },
+          },
+        },
+      },
+    });
 
     let tournaments_hash = {};
 
     tournaments.forEach((t) => {
-      if (!tournaments_hash[t.id]) {
+      let players = [];
+      t.games.forEach((game) =>
+        game.rounds.forEach((round) => {
+          players.push(round.player_1_name);
+          players.push(round.player_2_name);
+        })
+      );
+
+      if (players.length > 2) {
         tournaments_hash[t.id] = {
-          id: t.id,
+          id: t.id.toString(),
           created_at: t.created_at,
           deleted: t.deleted,
-          players: new Map([
-            [`${t.player_1_id}-${t.player_1_name}`, t.player_1_name],
-            [`${t.player_2_id}-${t.player_2_name}`, t.player_2_name],
-          ]),
+          players: Array.from(new Set([...players])),
         };
-      } else {
-        tournaments_hash[t.id].players.set(
-          `${t.player_1_id}-${t.player_1_name}`,
-          t.player_1_name
-        );
-        tournaments_hash[t.id].players.set(
-          `${t.player_2_id}-${t.player_2_name}`,
-          t.player_2_name
-        );
       }
-    });
-
-    Object.values(tournaments_hash).forEach((tournament) => {
-      tournament.players = Array.from(tournament.players.values());
     });
 
     return NextResponse.json(tournaments_hash, { status: 200 });

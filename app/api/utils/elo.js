@@ -3,9 +3,9 @@ import EloRank from "elo-rank";
 import { ELO_FACTOR, START_ELO } from "@/constants";
 
 export function calculateEloForRound(round, currentElo, eloRank = null) {
-  if (round.used_for_elo) {
-    return null;
-  }
+  // if (round.used_for_elo) {
+  //   return null;
+  // }
 
   if (eloRank == null) eloRank = new EloRank(ELO_FACTOR);
 
@@ -134,6 +134,15 @@ export async function calculateEloForTournament(
   for (const round of rounds) {
     const result = calculateEloForRound(round, currentElo);
     if (result == null) continue;
+
+    await prisma.rounds.update({
+      where: {
+        id: BigInt(round.id),
+      },
+      data: {
+        used_for_elo: true,
+      },
+    });
 
     currentElo = { ...result.updatedElo };
     eloHistories.push(result.eloHistories);
