@@ -1,8 +1,9 @@
-# Tournament Management System
+````md
+# Squash Tournament Management System
 
 ## Project Overview
 
-This project is a Tournament Management System that allows users to create and manage tournaments. It includes functionalities for managing players, games, rounds, sets, and elo history. The system is designed to provide flexibility for different types of tournaments and includes features for tournament creation, game scheduling, and score tracking.
+This project is a Tournament Management System that allows users to create and manage squash tournaments. It includes functionalities for managing players, games, and ELO ranking. The system is designed to provide flexibility for different types of tournaments with multiple games per tournament and multiple game modes (1 set per round or best 2 out of 3).
 
 ## Features
 
@@ -10,15 +11,13 @@ This project is a Tournament Management System that allows users to create and m
 - **Game Creation**: Add games within a tournament.
 - **Round Generation**: Automatically generate rounds for players in a tournament.
 - **Set Management**: Track and manage the score of sets within each round.
-- **Elo History**: Keep track of players' elo scores and update them based on match results.
+- **Elo History**: Keep track of players' ELO scores and update them based on match results.
 
 ## Technologies Used
 
 - **Next.js**: For building the application.
 - **Prisma**: For database interactions.
-- **SQLite**: Used as the database for local development (can be swapped for any other DB).
-- **Jest**: For testing (both unit and integration tests).
-- **Supertest**: For making HTTP requests during testing.
+- **PostgreSQL**: Used as the database for local development (can be swapped for any other DB).
 
 ## Project Setup
 
@@ -28,113 +27,62 @@ Before setting up the project, make sure you have the following installed:
 
 - Node.js (version 16.x or higher)
 - Prisma CLI
-- SQLite or any other relational database
+
+The `.env` file must include the following:
+
+```env
+DATABASE_URL=<your_database_url>
+DIRECT_URL=<your_direct_url>
+SECRET=<your_secret_key>
+```
+````
+
+- **DATABASE_URL**: This is the connection string to your database (e.g., Supabase, PostgreSQL).
+- **DIRECT_URL**: A direct connection URL for the database, typically provided by the database host (e.g., Supabase).
+- **SECRET**: A secret key used to encrypt/decrypt sensitive data (such as passwords).
+
+### Notes on Database Configuration
+
+- **DATABASE_URL** and **DIRECT_URL** can be found in the documentation: [Supabase Documentation](https://supabase.com/docs/guides/database/prisma).
+- In some cases, to avoid errors, you may need to add `?pgbouncer=true` at the end of the URL.
 
 ### Installation Steps
 
 1. **Clone the repository**:
 
-    ```bash
-    git clone <repository_url>
-    cd <project_directory>
-    ```
+   ```bash
+   git clone <repository_url>
+   cd <project_directory>
+   ```
 
 2. **Install dependencies**:
 
-    ```bash
-    npm install
-    ```
+   ```bash
+   npm install
+   ```
 
 3. **Set up the database**:
 
-    - If using SQLite (default setup), Prisma will automatically create the database on first migration.
-    - If using another database, ensure your `.env` file is properly configured with the appropriate database connection URL.
+   - Ensure your `.env` file is properly configured with the appropriate database connection URL.
+   - Assuming the Supabase URLs are provided correctly, run:
 
-4. **Run migrations**:
+   ```bash
+   npx prisma db pull
+   ```
 
-    ```bash
-    npx prisma migrate dev --name init
-    ```
+   This will generate the Prisma schema.
 
-5. **Start the development server**:
+   - Then, run:
 
-    ```bash
-    npm run dev
-    ```
+   ```bash
+   npx prisma generate
+   ```
 
-### Running Tests
+4. **Start the development server**:
 
-To run tests, make sure you have set up your test database correctly. The tests will automatically spin up a test database during execution.
-
-- Run unit and integration tests:
-
-    ```bash
-    npm run test
-    ```
-
-- Run the tests with coverage:
-
-    ```bash
-    npm run test:coverage
-    ```
-
-## API Endpoints
-
-### POST `/api/tournaments`
-
-- **Description**: Create a new tournament.
-- **Request Body**:
-
-    ```json
-    {
-      "players": [{"database_id": "123", "name": "Player 1"}, {"database_id": "456", "name": "Player 2"}],
-      "creator_player": "creator_id",
-      "game_type": 3
-    }
-    ```
-
-- **Response**:
-
-    ```json
-    {
-      "tournament_id": "109"
-    }
-    ```
-
-### POST `/api/games`
-
-- **Description**: Create a new game for an existing tournament.
-- **Request Body**:
-
-    ```json
-    {
-      "tournament_id": "109",
-      "players": [{"database_id": "123", "name": "Player 1"}, {"database_id": "456", "name": "Player 2"}],
-      "creator_player": "creator_id",
-      "game_type": 3
-    }
-    ```
-
-- **Response**:
-
-    ```json
-    {
-      "game_id": "200"
-    }
-    ```
-
-### GET `/api/tournaments/{id}`
-
-- **Description**: Get details of a specific tournament by ID.
-- **Response**:
-
-    ```json
-    {
-      "tournament_id": "109",
-      "status": "active",
-      "players": [{"database_id": "123", "name": "Player 1"}, {"database_id": "456", "name": "Player 2"}]
-    }
-    ```
+   ```bash
+   npm run dev
+   ```
 
 ## Schema
 
@@ -142,23 +90,30 @@ To run tests, make sure you have set up your test database correctly. The tests 
 
 - **id**: Unique identifier for the player.
 - **name**: Player's name.
-- **elo**: Player's elo score.
+- **username**: Player's unique username.
+- **elo**: Player's Elo score.
+- **password**: Player's password (hashed).
 
 ### Tournaments
 
 - **id**: Unique identifier for the tournament.
-- **status**: Status of the tournament (e.g., active, completed, deleted).
+- **deleted**: Status of the tournament (whether it has been deleted or not).
 
 ### Games
 
 - **id**: Unique identifier for the game.
 - **tournament_id**: Foreign key linking the game to a tournament.
-- **players**: List of players involved in the game.
+- **created_by**: The player who created the game.
+- **played_by**: List of players involved in the game.
 
 ### Rounds
 
 - **id**: Unique identifier for the round.
 - **game_id**: Foreign key linking the round to a game.
+- **player_1_id**: Unique identifier for player 1.
+- **player_2_id**: Unique identifier for player 2.
+- **player_1_name**: Player 1's name (if a player is not registered, the name will be used as an identifier).
+- **player_2_name**: Player 2's name (if a player is not registered, the name will be used as an identifier).
 
 ### Sets
 
@@ -169,12 +124,7 @@ To run tests, make sure you have set up your test database correctly. The tests 
 
 ### Elo Histories
 
-- **id**: Unique identifier for the elo history record.
+- **id**: Unique identifier for the Elo history record.
 - **player_id**: Player associated with the elo history record.
 - **elo**: The player's elo score at that time.
 - **round_id**: The round where the elo was updated.
-
-## Conclusion
-
-This system allows users to create and manage tournaments, track player performance, and ensure fair gameplay with elo rankings. The architecture is flexible and can be extended to support additional tournament features as needed.
-
