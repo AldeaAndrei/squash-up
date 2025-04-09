@@ -1,4 +1,3 @@
-````md
 # Squash Tournament Management System
 
 ## Project Overview
@@ -35,7 +34,6 @@ DATABASE_URL=<your_database_url>
 DIRECT_URL=<your_direct_url>
 SECRET=<your_secret_key>
 ```
-````
 
 - **DATABASE_URL**: This is the connection string to your database (e.g., Supabase, PostgreSQL).
 - **DIRECT_URL**: A direct connection URL for the database, typically provided by the database host (e.g., Supabase).
