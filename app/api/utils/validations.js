@@ -1,3 +1,5 @@
+import prisma from "@/app/lib/prisma";
+
 export function validateId(id) {
   if (id === undefined || id === null || id === "") {
     return { success: false, error: "ID is required and cannot be empty." };

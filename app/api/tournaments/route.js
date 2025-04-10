@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createTournament } from "../utils/tournamentCreator";
 import { validatePlayers } from "../utils/validations";
 import { updatePlayerNames } from "../utils/players";
+import prisma from "@/app/lib/prisma";
 
 export async function POST(request, { params }) {
   try {
