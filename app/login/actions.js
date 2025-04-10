@@ -3,6 +3,7 @@
 import bcrypt from "bcrypt";
 import { LoginFormSchema } from "../lib/definitions";
 import { createSession } from "../lib/session";
+import prisma from "@/app/lib/prisma";
 
 export async function login(state, formData) {
   const validationResults = LoginFormSchema.safeParse({
