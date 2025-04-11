@@ -3,9 +3,9 @@ import EloRank from "elo-rank";
 import { ELO_FACTOR, START_ELO } from "@/constants";
 
 export function calculateEloForRound(round, currentElo, eloRank = null) {
-  // if (round.used_for_elo) {
-  //   return null;
-  // }
+  if (round.used_for_elo) {
+    return null;
+  }
 
   if (eloRank == null) eloRank = new EloRank(ELO_FACTOR);
 
