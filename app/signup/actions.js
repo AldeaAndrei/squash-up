@@ -37,8 +37,9 @@ export async function signup(state, formData) {
     },
   });
 
-  if (player.username?.length > 0)
-    errors.username.push("Username-ul exista deja");
+  console.log(player);
+
+  if (player?.length > 0) errors.username.push("Username-ul exista deja");
 
   if (formData.get("password") != formData.get("passwordConfirmation"))
     errors.passwordConfirmation.push("Parola este diferita");

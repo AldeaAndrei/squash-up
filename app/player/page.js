@@ -82,8 +82,9 @@ export default function PlayerPage() {
             <div>
               <div></div>
               <div>
-                Total: {stats.gamesPlayed} - C: {stats.percentWon * 100}% / P:{" "}
-                {stats.percentLost * 100}%
+                Total: {stats.gamesPlayed} - C:{" "}
+                {(stats.percentWon * 100).toFixed(1)}% / P:{" "}
+                {(stats.percentLost * 100).toFixed(1)}%
               </div>
               <div>
                 Cele mai multe victorii:{" "}
