@@ -28,6 +28,7 @@ export default function PlayersList() {
               headers: {
                 "Content-Type": "application/json",
               },
+              cache: "no-store",
             }
           );
 

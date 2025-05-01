@@ -13,6 +13,7 @@ export default function PublicEloPage() {
           headers: {
             "Content-Type": "application/json",
           },
+          cache: "no-store",
         });
 
         setPlayers(await response.json());

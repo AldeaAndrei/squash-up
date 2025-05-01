@@ -20,6 +20,7 @@ export default function CalculateEloButton({
           headers: {
             "Content-Type": "application/json",
           },
+          cache: "no-store",
         }
       );
 

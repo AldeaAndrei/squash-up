@@ -10,7 +10,7 @@ export default function AuthProvider({ children }) {
 
   useEffect(() => {
     async function fetchPlayer() {
-      const res = await fetch("/api/session");
+      const res = await fetch("/api/session", { cache: "no-store" });
       const data = await res.json();
 
       if (data.playerId) {

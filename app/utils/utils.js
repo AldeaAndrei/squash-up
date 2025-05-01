@@ -21,6 +21,7 @@ export const generateNewTournament = async (creatorPlayerId) => {
       headers: {
         "Content-Type": "application/json",
       },
+      cache: "no-store",
       body: JSON.stringify(tournamentData),
     });
 
@@ -67,6 +68,7 @@ export const addGameToTournament = async (creatorPlayerId, tournamentId) => {
       headers: {
         "Content-Type": "application/json",
       },
+      cache: "no-store",
       body: JSON.stringify(gameData),
     });
 

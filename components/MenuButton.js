@@ -14,6 +14,7 @@ export default function MenuButton() {
   const handleLogout = async () => {
     const res = await fetch("/api/session", {
       method: "DELETE",
+      cache: "no-store",
     });
 
     const data = await res.json();

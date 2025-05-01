@@ -14,7 +14,9 @@ export default function GameList(params) {
 
   const fetchTournament = async () => {
     try {
-      const response = await fetch(`/api/tournaments/${params.tournamentId}`);
+      const response = await fetch(`/api/tournaments/${params.tournamentId}`, {
+        cache: "no-store",
+      });
 
       if (response.ok) {
         const data = await response.json();
@@ -38,7 +40,8 @@ export default function GameList(params) {
   const fetchTournamentPlayers = async () => {
     try {
       const response = await fetch(
-        `/api/tournaments/${params.tournamentId}/players`
+        `/api/tournaments/${params.tournamentId}/players`,
+        { cache: "no-store" }
       );
 
       if (response.ok) {
@@ -60,7 +63,8 @@ export default function GameList(params) {
   const fetchTournamentEloHistory = async () => {
     try {
       const response = await fetch(
-        `/api/elo/history/tournaments/${params.tournamentId}`
+        `/api/elo/history/tournaments/${params.tournamentId}`,
+        { cache: "no-store" }
       );
 
       if (response.ok) {

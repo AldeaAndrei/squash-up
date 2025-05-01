@@ -22,7 +22,7 @@ export default function TournamentsHistoryList() {
 
   const fetchTournaments = async () => {
     try {
-      const response = await fetch(`/api/tournaments/`);
+      const response = await fetch(`/api/tournaments/`, { cache: "no-store" });
 
       if (response.ok) {
         const data = await response.json();
@@ -47,6 +47,7 @@ export default function TournamentsHistoryList() {
           headers: {
             "Content-Type": "application/json",
           },
+          cache: "no-store",
         });
 
         if (!response.ok) {

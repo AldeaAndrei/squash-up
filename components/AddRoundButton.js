@@ -15,7 +15,9 @@ export default function AddRoundButton({ noText, tournamentId }) {
   useEffect(() => {
     const fetchTournament = async () => {
       try {
-        const response = await fetch(`/api/tournaments/${tournamentId}`);
+        const response = await fetch(`/api/tournaments/${tournamentId}`, {
+          cache: "no-store",
+        });
 
         if (response.ok) {
           const data = await response.json();

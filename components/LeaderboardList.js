@@ -9,7 +9,8 @@ export default function LeaderboardList({ tournamentId }) {
     const fetchTournament = async () => {
       try {
         const response = await fetch(
-          `/api/tournaments/${tournamentId}/leaderboard`
+          `/api/tournaments/${tournamentId}/leaderboard`,
+          { cache: "no-store" }
         );
 
         if (response.ok) {

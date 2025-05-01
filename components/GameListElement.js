@@ -91,7 +91,9 @@ export default function gameListElement({
 
   const getEloChanges = async () => {
     try {
-      const response = await fetch(`/api/elo/history/rounds/${round.id}`);
+      const response = await fetch(`/api/elo/history/rounds/${round.id}`, {
+        cache: "no-store",
+      });
 
       if (response.ok) {
         const data = await response.json();
@@ -127,6 +129,7 @@ export default function gameListElement({
         headers: {
           "Content-Type": "application/json",
         },
+        cache: "no-store",
         body: JSON.stringify({
           newSets,
         }),

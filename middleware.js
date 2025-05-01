@@ -26,16 +26,12 @@ export default async function middleware(req) {
 
   // 4. Redirect
   if (isProtectedRoute && !session?.playerId) {
-    return NextResponse.redirect(new URL("/login", req.nextUrl));
+    const res = NextResponse.redirect(new URL("/login", req.nextUrl));
+    res.headers.set("Cache-Control", "no-store");
+    return res;
   }
 
-  //   if (
-  //     isPublicRoute &&
-  //     session?.playerId &&
-  //     !req.nextUrl.pathname.startsWith("/start")
-  //   ) {
-  //     return NextResponse.redirect(new URL("/start", req.nextUrl));
-  //   }
-
-  return NextResponse.next();
+  const res = NextResponse.next();
+  res.headers.set("Cache-Control", "no-store");
+  return res;
 }

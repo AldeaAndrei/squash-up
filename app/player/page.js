@@ -13,7 +13,7 @@ export default function PlayerPage() {
     async function fetchPlayer() {
       if (!player) return;
 
-      const res = await fetch(`/api/players/${player}`);
+      const res = await fetch(`/api/players/${player}`, { cache: "no-store" });
       const data = await res.json();
 
       setPlayerData(data.player);
@@ -22,7 +22,9 @@ export default function PlayerPage() {
     async function fetchStatistics() {
       if (!player) return;
 
-      const res = await fetch(`/api/statistics/player/${player}`);
+      const res = await fetch(`/api/statistics/player/${player}`, {
+        cache: "no-store",
+      });
       const data = await res.json();
 
       setStats(data);
@@ -31,7 +33,9 @@ export default function PlayerPage() {
     async function fetchHistory() {
       if (!player) return;
 
-      const res = await fetch(`/api/elo/history/player/${player}`);
+      const res = await fetch(`/api/elo/history/player/${player}`, {
+        cache: "no-store",
+      });
       const data = await res.json();
 
       setHistory(data);
