@@ -81,11 +81,10 @@ function shufflePairs(pairs) {
   return pairs;
 }
 
-async function createRounds(gamePlayers, game_id, gameType, tx) {
+function createRounds(gamePlayers) {
   let players = [...gamePlayers];
 
   let roundsData = [];
-  let setsData = [];
   let pairs = {};
 
   const generateRoundForPair = (player1, player2, pairKey, reversePairKey) => {
@@ -94,7 +93,6 @@ async function createRounds(gamePlayers, game_id, gameType, tx) {
       player_2_name: player2.name,
       player_1_id: player1.database_id ? BigInt(player1.database_id) : null,
       player_2_id: player2.database_id ? BigInt(player2.database_id) : null,
-      game_id: BigInt(game_id),
     };
 
     pairs[pairKey] = true;
@@ -122,33 +120,9 @@ async function createRounds(gamePlayers, game_id, gameType, tx) {
     }
   });
 
-  const createdRoundsIds = [];
-
-  for (const roundData of roundsData) {
-    const createdRound = await tx.rounds.create({
-      data: roundData,
-    });
-    createdRoundsIds.push(createdRound.id);
-  }
-
-  createdRoundsIds.forEach((round_id) =>
-    setsData.push(
-      ...Array.from({ length: gameType }, () => ({
-        player_1_score: 0,
-        player_2_score: 0,
-        round_id: round_id,
-      }))
-    )
-  );
-
-  const sets = await tx.sets.createMany({
-    data: setsData,
-  });
-
-  return { rounds: createdRoundsIds, sets };
+  return roundsData;
 }
 
-// Add a new game to an already existing tournament
 export async function createGameForTournament(
   tournamentId,
   players,
@@ -158,82 +132,85 @@ export async function createGameForTournament(
   const playerIds = [
     ...new Set(
       players
-        .map((player) => player.database_id)
+        .map((p) => p.database_id)
         .filter((id) => id != null)
         .map((id) => BigInt(id))
     ),
   ];
 
-  const tournament = await prisma.tournaments.findUnique({
-    where: { id: tournamentId },
-  });
+  const rounds = createRounds(players);
 
   try {
-    // Start a transaction
-    const result = await prisma.$transaction(async (tx) => {
-      // Create game
-      const game = await tx.games.create({
-        data: {
-          tournament_id: tournament.id,
-          created_by: creatorPlayer,
-          played_by: [...playerIds],
+    const game = await prisma.games.create({
+      data: {
+        tournaments: { connect: { id: BigInt(tournamentId) } },
+        created_by: creatorPlayer != null ? BigInt(creatorPlayer) : null,
+        played_by: playerIds,
+        rounds: {
+          create: rounds.map((r) => ({
+            player_1_name: r.player_1_name,
+            player_2_name: r.player_2_name,
+            player_1_id: r.player_1_id ?? null,
+            player_2_id: r.player_2_id ?? null,
+            sets: {
+              create: Array.from({ length: gameType }, () => ({
+                player_1_score: 0,
+                player_2_score: 0,
+              })),
+            },
+          })),
         },
-      });
-
-      // Create rounds and sets
-      const result = await createRounds(players, game.id, gameType, tx);
-      console.log(result);
-
-      // Return success if all operations succeed
-      return { success: true, error: null, tournamentId: tournament.id };
+      },
     });
 
-    // If everything goes fine, return success
-    return result;
+    return { success: true, error: null, tournamentId };
   } catch (error) {
-    // If any error occurs, the transaction will be rolled back
     console.error("Error creating game for tournament:", error);
     return { success: false, error: error.message, tournamentId: null };
   }
 }
 
-// Creates a new tournament
 export async function createTournament(players, creatorPlayer, gameType) {
-  const playerIds = players
-    .map((player) => player.database_id)
-    .filter((id) => id != null)
-    .map((id) => BigInt(id));
+  const playerIds = [
+    ...new Set(
+      players
+        .map((p) => p.database_id)
+        .filter((id) => id != null)
+        .map((id) => BigInt(id))
+    ),
+  ];
+
+  const rounds = createRounds(players);
 
   try {
-    // Start a transaction
-    const result = await prisma.$transaction(async (tx) => {
-      // Create tournament
-      const tournament = await tx.tournaments.create({
-        data: {
-          deleted: false,
+    const tournament = await prisma.tournaments.create({
+      data: {
+        deleted: false,
+        games: {
+          create: {
+            created_by: creatorPlayer != null ? BigInt(creatorPlayer) : null,
+            played_by: playerIds,
+            rounds: {
+              create: rounds.map((r) => ({
+                player_1_name: r.player_1_name,
+                player_2_name: r.player_2_name,
+                player_1_id: r.player_1_id ?? null,
+                player_2_id: r.player_2_id ?? null,
+                sets: {
+                  create: Array.from({ length: gameType }, () => ({
+                    player_1_score: 0,
+                    player_2_score: 0,
+                  })),
+                },
+              })),
+            },
+          },
         },
-      });
-
-      // Create game
-      const game = await tx.games.create({
-        data: {
-          tournament_id: tournament.id,
-          created_by: creatorPlayer,
-          played_by: [...playerIds],
-        },
-      });
-
-      // Create rounds and sets
-      await createRounds(players, game.id, gameType, tx);
-
-      // Return success if all operations succeed
-      return { success: true, error: null, tournamentId: tournament.id };
+      },
     });
 
-    // If everything goes fine, return success
-    return result;
+    return { success: true, error: null, tournamentId: tournament.id };
   } catch (error) {
-    // If any error occurs, the transaction will be rolled back
     console.error("Error creating tournament:", error);
     return { success: false, error: error.message, tournamentId: null };
   }
