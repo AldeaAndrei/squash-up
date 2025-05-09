@@ -23,6 +23,16 @@ export async function GET(request, { params }) {
     },
   });
 
+  if (tournament) {
+    tournament.games.sort((a, b) => Number(a.id) - Number(b.id));
+    tournament.games.forEach((game) => {
+      game.rounds.sort((a, b) => Number(a.id) - Number(b.id));
+      game.rounds.forEach((round) => {
+        round.sets.sort((a, b) => Number(a.id) - Number(b.id));
+      });
+    });
+  }
+
   return new Response(
     safeJson({
       tournament,

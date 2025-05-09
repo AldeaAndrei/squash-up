@@ -74,13 +74,13 @@ export default function gameListElement({
     if (player1Values == null || player2Values == null) return;
 
     const newColorsPlayer1 = player1Values.map((v, i) => {
-      if (v === 0) return "text-gray-400";
+      if (v === 0 && player2Values[i] === 0) return "text-gray-400";
       if (v === player2Values[i]) return "text-white";
       return v < player2Values[i] ? "text-[#c54242]" : "text-[#84c542]";
     });
 
     const newColorsPlayer2 = player2Values.map((v, i) => {
-      if (v === 0) return "text-gray-400";
+      if (v === 0 && player1Values[i] === 0) return "text-gray-400";
       if (v === player1Values[i]) return "text-white";
       return v < player1Values[i] ? "text-[#c54242]" : "text-[#84c542]";
     });
