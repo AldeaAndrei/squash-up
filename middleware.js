@@ -18,6 +18,9 @@ export default async function middleware(req) {
   const isProtectedRoute = protectedRoutes.some((route) =>
     path.startsWith(route)
   );
+
+  if (!isProtectedRoute) return NextResponse.next();
+
   const isPublicRoute = publicRoutes.includes(path);
 
   // 3. Decrypt the session from the cookie
@@ -27,11 +30,9 @@ export default async function middleware(req) {
   // 4. Redirect
   if (isProtectedRoute && !session?.playerId) {
     const res = NextResponse.redirect(new URL("/login", req.nextUrl));
-    res.headers.set("Cache-Control", "no-store");
     return res;
   }
 
   const res = NextResponse.next();
-  res.headers.set("Cache-Control", "no-store");
   return res;
 }

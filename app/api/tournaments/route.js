@@ -3,6 +3,7 @@ import { createTournament } from "../utils/tournamentCreator";
 import { validatePlayers } from "../utils/validations";
 import { updatePlayerNames } from "../utils/players";
 import prisma from "@/app/lib/prisma";
+import { getAll } from "./utils/getAll";
 
 export async function POST(request, { params }) {
   try {
@@ -59,47 +60,7 @@ export async function POST(request, { params }) {
 
 export async function GET() {
   try {
-    const tournaments = await prisma.tournaments.findMany({
-      where: {
-        deleted: false,
-      },
-      select: {
-        id: true,
-        created_at: true,
-        deleted: true,
-        games: {
-          select: {
-            rounds: {
-              select: {
-                player_1_name: true,
-                player_2_name: true,
-              },
-            },
-          },
-        },
-      },
-    });
-
-    let tournaments_hash = {};
-
-    tournaments.forEach((t) => {
-      let players = [];
-      t.games.forEach((game) =>
-        game.rounds.forEach((round) => {
-          players.push(round.player_1_name);
-          players.push(round.player_2_name);
-        })
-      );
-
-      if (players.length > 2) {
-        tournaments_hash[t.id] = {
-          id: t.id.toString(),
-          created_at: t.created_at,
-          deleted: t.deleted,
-          players: Array.from(new Set([...players])),
-        };
-      }
-    });
+    const tournaments_hash = await getAll();
 
     return NextResponse.json(tournaments_hash, { status: 200 });
   } catch (error) {

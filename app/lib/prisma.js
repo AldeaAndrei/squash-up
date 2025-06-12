@@ -8,7 +8,10 @@ let prisma;
 if (process.env.NODE_ENV === "production") {
   prisma = new PrismaClient();
 } else {
-  prisma = globalForPrisma.prisma || new PrismaClient();
+  prisma =
+    globalForPrisma.prisma ||
+    // new PrismaClient({ log: ["query", "info", "warn", "error"] });
+    new PrismaClient();
   if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
 }
 

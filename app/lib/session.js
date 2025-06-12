@@ -6,12 +6,13 @@ import { redirect } from "next/navigation";
 
 const secretKey = process.env.SECRET;
 const key = new TextEncoder().encode(secretKey);
+const expiresAt = new Date(Date.now() + 2 * 24 * 60 * 60 * 1000); // 2 days
 
 export async function encrypt(payload) {
   return new SignJWT(payload)
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
-    .setExpirationTime("1hr")
+    .setExpirationTime(expiresAt)
     .sign(key);
 }
 
@@ -28,8 +29,7 @@ export async function decrypt(session) {
 
 export async function createSession(playerId) {
   try {
-    const expiresAt = new Date(Date.now() + 2 * 24 * 60 * 60 * 1000);
-    const session = await encrypt({ playerId, expiresAt });
+    const session = await encrypt({ playerId });
 
     const cookieStore = await cookies();
 
@@ -67,11 +67,10 @@ export async function updateSession() {
     return null;
   }
 
-  const expires = new Date(Date.now() + 2 * 24 * 60 * 60 * 1000);
   cookies().set("session", session, {
     httpOnly: true,
     secure: true,
-    expires: expires,
+    expires: expiresAt,
     sameSite: "lax",
     path: "/",
   });

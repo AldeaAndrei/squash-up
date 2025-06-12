@@ -1,5 +1,6 @@
 import prisma from "@/app/lib/prisma";
 import { NextResponse } from "next/server";
+import { safeJson } from "../../utils/json";
 
 export async function POST(request) {
   const { newSets } = await request.json();
@@ -20,7 +21,8 @@ export async function POST(request) {
       updatedIds.push(updated.id.toString());
     }
 
-    return NextResponse.json(updatedIds, { status: 200 });
+    console.log(updatedIds);
+    return new NextResponse(safeJson({ updatedIds }, { status: 200 }));
   } catch (error) {
     console.error(error);
     return NextResponse.json({ message: error.message }, { status: 400 });

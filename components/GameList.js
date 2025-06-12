@@ -1,115 +1,23 @@
-"use client";
-
-import { useEffect, useState } from "react";
 import GameListElement from "./GameListElement";
 import LockIcon from "@mui/icons-material/Lock";
 import CalculateEloButton from "./CalculateEloButton";
+import { getById } from "@/app/api/tournaments/utils/getById";
+import getPlayersById from "@/app/api/tournaments/utils/getPlayersById";
+import getHistoryByTournamentId from "@/app/api/elo/utils/getHistoryByTournamentId";
 
-export default function GameList(params) {
-  const [games, setGames] = useState([]);
-  const [players, setPlayers] = useState([]);
-  const [tournament, setTournament] = useState();
-  const [eloHistory, setEloHistory] = useState();
-  const [isReadOnly, setIsReadOnly] = useState(false);
+export default async function GameList(params) {
+  const tournament = await getById(params.tournamentId);
+  const players = await getPlayersById(params.tournamentId);
+  const eloHistory = await getHistoryByTournamentId(params.tournamentId);
 
-  const fetchTournament = async () => {
-    try {
-      const response = await fetch(`/api/tournaments/${params.tournamentId}`, {
-        cache: "no-store",
-      });
+  const now = new Date();
+  const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+  const isReadOnly = new Date(tournament.created_at) < oneDayAgo;
 
-      if (response.ok) {
-        const data = await response.json();
-        setTournament(data.tournament);
-
-        const now = new Date(); // Get current date and time
-        const twentyFourHoursAgo = new Date(
-          now.getTime() - 24 * 60 * 60 * 1000
-        ); // Subtract 24 hours
-        setIsReadOnly(
-          new Date(data.tournament.created_at) < twentyFourHoursAgo
-        );
-      } else {
-        console.error("Failed to fetch tournament data");
-      }
-    } catch (error) {
-      console.error("Error fetching tournament data:", error);
-    }
-  };
-
-  const fetchTournamentPlayers = async () => {
-    try {
-      const response = await fetch(
-        `/api/tournaments/${params.tournamentId}/players`,
-        { cache: "no-store" }
-      );
-
-      if (response.ok) {
-        const data = await response.json();
-        setPlayers(
-          data.players.reduce((map, player) => {
-            map[player.id] = player.name;
-            return map;
-          }, {})
-        );
-      } else {
-        console.error("Failed to fetch tournament players data");
-      }
-    } catch (error) {
-      console.error("Error fetching tournament players data:", error);
-    }
-  };
-
-  const fetchTournamentEloHistory = async () => {
-    try {
-      const response = await fetch(
-        `/api/elo/history/tournaments/${params.tournamentId}`,
-        { cache: "no-store" }
-      );
-
-      if (response.ok) {
-        const data = await response.json();
-        const eloHash = {};
-
-        data.forEach((eloData) => {
-          eloHash[`${eloData.round_id}-${eloData.player_id}`] = eloData.elo;
-        });
-
-        setEloHistory(eloHash);
-      } else {
-        console.error("Failed to fetch tournament elo history data");
-      }
-    } catch (error) {
-      console.error("Error fetching tournament elo history data:", error);
-    }
-  };
-
-  const fetchData = async () => {
-    await fetchTournamentPlayers();
-    await fetchTournament();
-    await fetchTournamentEloHistory();
-  };
-
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  useEffect(() => {
-    const storedGames = localStorage.getItem("games");
-    if (storedGames) {
-      try {
-        setGames(JSON.parse(storedGames));
-      } catch (error) {
-        setGames([]);
-      }
-    }
-  }, []);
-
-  useEffect(() => {
-    if (games.length > 0) {
-      localStorage.setItem("games", JSON.stringify(games));
-    }
-  }, [games]);
+  const eloHash = {};
+  eloHistory.forEach((eloData) => {
+    eloHash[`${eloData.round_id}-${eloData.player_id}`] = eloData.elo;
+  });
 
   return (
     <ul className="overflow-scroll-y flex flex-col gap-2 justify-center items-center">
@@ -123,12 +31,11 @@ export default function GameList(params) {
         {!isReadOnly && (
           <CalculateEloButton
             tournamentId={params.tournamentId}
-            fetchData={fetchData}
             isDisabled={isReadOnly}
           />
         )}
       </div>
-      {tournament &&
+      {tournament?.games &&
         tournament.games.map((game, index) => {
           return (
             <ul
@@ -140,25 +47,26 @@ export default function GameList(params) {
                 <div className="px-2">Joc {index + 1}</div>
                 <div className="flex-grow bg-white h-[1px] rounded-full" />
               </div>
-              {game.rounds.map((round, index) => {
-                return (
-                  <div key={`element-${index}`}>
-                    <GameListElement
-                      key={index}
-                      round={round}
-                      players={players}
-                      eloHistory={eloHistory}
-                      player1ValuesProps={round.sets.map(
-                        (set) => set.player_1_score
-                      )}
-                      player2ValuesProps={round.sets.map(
-                        (set) => set.player_2_score
-                      )}
-                      isReadOnly={isReadOnly}
-                    />
-                  </div>
-                );
-              })}
+              {game?.rounds &&
+                game.rounds.map((round, index) => {
+                  return (
+                    <div key={`element-${index}`}>
+                      <GameListElement
+                        key={index}
+                        round={round}
+                        players={players}
+                        eloHistory={eloHash}
+                        player1ValuesProps={round.sets.map(
+                          (set) => set.player_1_score
+                        )}
+                        player2ValuesProps={round.sets.map(
+                          (set) => set.player_2_score
+                        )}
+                        isReadOnly={isReadOnly}
+                      />
+                    </div>
+                  );
+                })}
             </ul>
           );
         })}

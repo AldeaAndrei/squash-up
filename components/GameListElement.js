@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useEffect, useRef, useState } from "react";
 import WinnerIcon from "@mui/icons-material/EmojiEvents";
 import { yellow } from "@mui/material/colors";
@@ -32,7 +34,6 @@ export default function gameListElement({
   const [eloData, setEloData] = useState();
 
   const setInputValues1 = (value, index) => {
-    console.log("Change 1");
     const newValues = player1Values.map((v, i) => {
       return i === index ? validatedScore(value) : v;
     });
@@ -118,7 +119,7 @@ export default function gameListElement({
       for (let i = 0; i < round.sets.length; i++) {
         let set = round.sets[i];
         newSets.push({
-          id: set.id,
+          id: BigInt(set.id).toString(),
           player_1_score: player1Values[i],
           player_2_score: player2Values[i],
         });
@@ -146,11 +147,10 @@ export default function gameListElement({
   useEffect(() => {
     setColors();
     calculateWinner();
-    getEloChanges();
 
     if (isFirstRender.current) {
       isFirstRender.current = false;
-      return; // Skip effect on first render
+      return;
     }
 
     const delayDebounceFn = setTimeout(() => {
@@ -159,28 +159,6 @@ export default function gameListElement({
 
     return () => clearTimeout(delayDebounceFn);
   }, [player1Values, player2Values]);
-
-  // DEPRECATED - remove
-  // const parseElo = (id, name) => {
-  //   if (eloData[`${id}-${name}`]?.change == null) return <></>;
-
-  //   return (
-  //     <div className="align-middle text-sm">
-  //       <span className="mr-2">{eloData[`${id}-${name}`]?.elo}</span>
-  //       <span
-  //         className={
-  //           eloData[`${id}-${name}`]?.change < 0
-  //             ? "text-[#c54242]"
-  //             : "text-[#84c542]"
-  //         }
-  //       >
-  //         {eloData[`${id}-${name}`]?.change < 0
-  //           ? `${eloData[`${id}-${name}`]?.change}`
-  //           : `+${eloData[`${id}-${name}`]?.change}`}
-  //       </span>
-  //     </div>
-  //   );
-  // };
 
   const parseElo = (id) => {
     const elo = eloHistory[`${round.id}-${id}`];

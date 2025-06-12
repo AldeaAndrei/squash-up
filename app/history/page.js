@@ -1,5 +1,7 @@
 import NavBar from "@/components/NavBar";
-import TournamentsHistoryList from "@/components/TournamentsHistoryList";
+import { Suspense } from "react";
+import Loading from "./loading";
+import TournamentsHistoryList from "@/components/TournamentHistoryList";
 
 export default function HistoryPage() {
   return (
@@ -8,7 +10,9 @@ export default function HistoryPage() {
         <NavBar />
       </section>
       <section>
-        <TournamentsHistoryList />
+        <Suspense fallback={<Loading />}>
+          <TournamentsHistoryList />
+        </Suspense>
       </section>
     </div>
   );
