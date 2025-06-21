@@ -17,12 +17,19 @@ export async function encrypt(payload) {
 }
 
 export async function decrypt(session) {
+  const start = performance.now();
+
   try {
     const { payload } = await jwtVerify(session, key, {
       algorithms: ["HS256"],
     });
+
+    const end = performance.now();
+    console.log(`>>>>> decrypt: ${Math.round(end - start)}ms`);
     return payload;
   } catch (error) {
+    const end = performance.now();
+    console.log(`>>>>> decrypt (failed): ${Math.round(end - start)}ms`);
     return null;
   }
 }

@@ -33,7 +33,7 @@ export default function PlayerPage() {
     async function fetchHistory() {
       if (!player) return;
 
-      const res = await fetch(`/api/elo/history/player/${player}`, {
+      const res = await fetch(`/api/elo/history/player/${player}?limit=2`, {
         cache: "no-store",
       });
       const data = await res.json();

@@ -1,6 +1,5 @@
 import LeaderboardList from "@/components/LeaderboardList";
 import NavBar from "@/components/NavBar";
-import NavigationButton from "@/components/NavigationButton";
 
 export default async function LeaderboardPage({ params }) {
   const { id } = await params;

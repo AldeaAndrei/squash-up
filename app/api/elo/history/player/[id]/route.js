@@ -6,14 +6,44 @@ export async function GET(req, { params }) {
   try {
     const { id } = await params;
 
+    const searchParams = req.nextUrl.searchParams;
+    const limit = searchParams.get("limit");
+
+    const parsedLimit = Number.isNaN(parseInt(limit, 10))
+      ? 1
+      : parseInt(limit, 10);
+
     const idValidation = validateId(id);
 
     if (!idValidation.success) {
       return NextResponse.json({ error: idValidation.error }, { status: 400 });
     }
 
+    const recentTournaments = await prisma.tournaments.findMany({
+      where: { deleted: false },
+      orderBy: { id: "desc" },
+      take: parsedLimit,
+      select: { id: true },
+    });
+
+    const tournamentIds = recentTournaments.map((t) => t.id);
+
+    const gamesInTournaments = await prisma.games.findMany({
+      where: { tournament_id: { in: tournamentIds } },
+      select: { id: true },
+    });
+
+    const gameIds = gamesInTournaments.map((g) => g.id);
+
+    const roundsInGames = await prisma.rounds.findMany({
+      where: { game_id: { in: gameIds } },
+      select: { id: true },
+    });
+
+    const roundIds = roundsInGames.map((r) => r.id);
+
     const eloHistory = await prisma.elo_histories.findMany({
-      where: { player_id: id },
+      where: { player_id: id, round_id: { in: roundIds } },
       orderBy: [{ round_id: "desc" }, { id: "desc" }],
       select: {
         round_id: true,
