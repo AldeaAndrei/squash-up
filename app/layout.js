@@ -15,10 +15,23 @@ const geistMono = Geist_Mono({
 
 export const metadata = {
   title: "SquashUP",
-  description: "",
+  description: "Track your squash stats",
   icons: {
     icon: "/favicon.png",
-    type: "image/png",
+  },
+  openGraph: {
+    type: "website",
+    url: "https://squash-up.vercel.app",
+    title: "SquashUP",
+    description: "Track your squash stats",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 512,
+        height: 512,
+        alt: "SquashUP Preview Image",
+      },
+    ],
   },
 };
 
