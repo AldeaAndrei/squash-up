@@ -33,14 +33,14 @@ export async function getAll() {
       })
     );
 
-    if (players.length > 2) {
+    // if (players.length > 2) {
       tournaments_hash[t.id] = {
         id: t.id.toString(),
         created_at: t.created_at,
         deleted: t.deleted,
         players: Array.from(new Set([...players])),
       };
-    }
+    // }
   });
 
   return tournaments_hash;
