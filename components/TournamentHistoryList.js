@@ -4,7 +4,7 @@ import ViewTournamentButton from "./ViewTournamentButton";
 import DeleteTournamentButton from "./DeleteTournamentButton";
 
 export default async function TournamentsHistoryList() {
-  const tournaments = await getAll();
+  const { page, perPage, totalCount, totalPages, tournaments } = await getAll();
 
   return (
     <Fragment>
