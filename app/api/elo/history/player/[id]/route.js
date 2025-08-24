@@ -22,7 +22,7 @@ export async function GET(req, { params }) {
     const recentTournaments = await prisma.tournaments.findMany({
       where: { deleted: false },
       orderBy: { id: "desc" },
-      take: parsedLimit,
+      // take: parsedLimit,
       select: { id: true },
     });
 

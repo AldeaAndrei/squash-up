@@ -3,80 +3,94 @@
 import { useActionState, useEffect } from "react";
 import { login } from "./actions";
 import { useRouter } from "next/navigation";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 export default function LoginPage() {
   const [state, action, pending] = useActionState(login, null);
   const router = useRouter();
 
   useEffect(() => {
-    if (!pending && state?.success) {
+    if (!pending && state?.success.success === true) {
       router.push("/start");
     }
   }, [state, pending]);
 
   return (
-    <form
-      className="w-80 bg-[#ffffff05] rounded-xl border-[#0000005b] border-2 mx-auto mt-10"
-      action={action}
-    >
-      <div className="flex flex-col justify-start items-center gap-4 w-full px-3 pt-2">
-        <label htmlFor="username" className="w-full">
-          Username
-        </label>
-        <input
-          className="px-1 border-b-2 text-black w-full"
-          id="username"
-          name="username"
-          type="username"
-          placeholder="ionelpopescu69"
-          defaultValue={state?.fields?.username || ""}
-        />
-        {state?.errors?.username && (
-          <ul className="w-full text-red-400">
-            {state.errors.username.map((e) => {
-              return (
-                <li className="text-start align-middle">
-                  <span>- </span>
-                  {e}
-                </li>
-              );
-            })}
-          </ul>
-        )}
-        <label htmlFor="password" className="w-full">
-          Parola
-        </label>
-        <input
-          className="px-1 border-b-2 text-black w-full"
-          id="password"
-          name="password"
-          type="password"
-        />
-        {state?.errors?.password && (
-          <ul className="w-full text-red-400">
-            {state.errors.password.map((e) => {
-              return (
-                <li className="text-start align-middle">
-                  <span>- </span>
-                  {e}
-                </li>
-              );
-            })}
-          </ul>
-        )}
-        <div>
-          {state?.errors?.login && (
-            <p className="w-full text-red-400">{state.errors.login}</p>
-          )}
-        </div>
-        <button
-          disabled={pending}
-          type="submit"
-          className="bg-[#131313] hover:bg-[#1d1f1e] font-bold py-2 px-4 border border-[#292929] rounded w-72 mb-10"
-        >
-          {pending ? "..." : "Log In"}
-        </button>
-      </div>
-    </form>
+    <Card className="w-80 mx-auto mt-10">
+      <CardHeader className="w-full">
+        <CardTitle>Log in</CardTitle>
+        <CardDescription>
+          Enter your username and password to continue.
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <form action={action}>
+          <div className="flex flex-col justify-start items-center gap-4 w-full">
+            <Label htmlFor="username" className="w-full">
+              Username
+            </Label>
+            <Input
+              id="username"
+              name="username"
+              type="text"
+              placeholder="ionelpopescu69"
+              defaultValue={state?.fields?.username || ""}
+            />
+            {state?.errors?.username && (
+              <ul className="w-full text-red-400">
+                {state.errors.username.map((e) => {
+                  return (
+                    <li className="text-start align-middle">
+                      <span>- </span>
+                      {e}
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+            <Label htmlFor="password" className="w-full">
+              Password
+            </Label>
+            <Input id="password" name="password" type="password" />
+            {state?.errors?.password && (
+              <ul className="w-full text-red-400">
+                {state.errors.password.map((e) => {
+                  return (
+                    <li className="text-start align-middle">
+                      <span>- </span>
+                      {e}
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+            <div>
+              {state?.errors?.login && (
+                <p className="w-full text-red-400">{state.errors.login}</p>
+              )}
+            </div>
+            <Button disabled={pending} type="submit" className="w-52">
+              {pending ? "..." : "Log In"}
+            </Button>
+            <Button
+              onClick={() => router.push("/signup")}
+              variant="ghost"
+              className="underline text-sm"
+            >
+              Create an account
+            </Button>
+          </div>
+        </form>
+      </CardContent>
+    </Card>
   );
 }

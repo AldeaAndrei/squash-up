@@ -2,12 +2,42 @@
 
 import { useState, useEffect } from "react";
 import { useAuthStore } from "../store/authStore";
+import { Card } from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Spinner } from "@/components/ui/shadcn-io/spinner";
+import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export default function PlayerPage() {
   const { player } = useAuthStore();
   const [playerData, setPlayerData] = useState({});
   const [history, setHistory] = useState([]);
   const [stats, setStats] = useState();
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(null);
+
+  async function fetchHistory() {
+    if (!player) return;
+
+    const res = await fetch(
+      `/api/v1/elo?page=${page}&perPage=10&playerId=${player}`,
+      {
+        cache: "no-store",
+      }
+    );
+    const data = await res.json();
+
+    setHistory(data.eloHistory);
+    setTotalPages(data.pagination.totalPages || 1);
+  }
 
   useEffect(() => {
     async function fetchPlayer() {
@@ -30,112 +60,207 @@ export default function PlayerPage() {
       setStats(data);
     }
 
-    async function fetchHistory() {
-      if (!player) return;
-
-      const res = await fetch(`/api/elo/history/player/${player}?limit=2`, {
-        cache: "no-store",
-      });
-      const data = await res.json();
-
-      setHistory(data);
-    }
-
     fetchPlayer();
     fetchHistory();
     fetchStatistics();
   }, [player]);
 
+  useEffect(() => {
+    fetchHistory();
+  }, [page]);
+
+  const formatDate = (isoString) => {
+    const date = new Date(isoString);
+    return date.toLocaleDateString("en-GB", {
+      day: "2-digit",
+      month: "short",
+      // year: "numeric",
+    });
+  };
+
   return (
     <div className="p-3">
-      {playerData ? (
-        <div className="flex flex-col gap-3">
-          <h1 className="flex gap-2 font-bold text-3xl items-center justify-start">
-            <span>{playerData.name}</span>
-            {/* TODO: fix */}
-            {/* {playerData?.rank && (
-              <span className="font-semibold text-2xl">#{playerData.rank}</span>
-            )} */}
-          </h1>
-          <div className="">
-            {playerData?.elo && (
-              <div>
-                <p>
-                  ELO <span className="font-semibold">{playerData.elo}</span>
-                </p>
-                {stats && (
-                  <p>
-                    ↑{" "}
-                    <span className="font-semibold text-sm">
-                      {stats.bestElo}
-                    </span>
-                  </p>
-                )}
-                {stats && (
-                  <p>
-                    ↓{" "}
-                    <span className="font-semibold text-sm">
-                      {stats.worstElo}
-                    </span>
-                  </p>
-                )}
-              </div>
-            )}
-          </div>
-          {stats && (
+      <div className="grid grid-cols-2 grid-rows-2 w-full gap-3">
+        {playerData?.name && playerData?.elo ? (
+          <Card className="w-full aspect-square p-3">
             <div>
-              <div></div>
+              <h1 className="text-lg mb-4">{playerData.name}</h1>
               <div>
-                Total: {stats.gamesPlayed} - C:{" "}
-                {(stats.percentWon * 100).toFixed(1)}% / P:{" "}
-                {(stats.percentLost * 100).toFixed(1)}%
-              </div>
-              <div>
-                Cele mai multe victorii:{" "}
-                <span className="font-semibold">
-                  {stats.mostWinsAgainstName} ({stats.mostWinsAgainstCount})
-                </span>
-              </div>
-              <div>
-                Cele mai multe infrangeri:{" "}
-                <span className="font-semibold">
-                  {stats.mostLossesAgainstName} ({stats.mostLossesAgainstCount})
-                </span>
+                <span className="font-semibold text-xl">{playerData.elo}</span>
+                <span className="font-light ml-2 text-sm">ELO</span>
               </div>
             </div>
-          )}
-          <div className="py-1">
-            {history?.length > 0 && (
-              <ul>
-                {history.map((h) => {
-                  return (
-                    <li
-                      key={h.round_id}
-                      className="flex items-center justify-start h-14 my-3"
+          </Card>
+        ) : (
+          <Card className="w-full aspect-square p-3 flex justify-center items-center">
+            <Spinner variant="circle" />
+          </Card>
+        )}
+        {stats?.bestElo && stats?.worstElo ? (
+          <Card className="w-full aspect-square p-3">
+            <h1 className="text-lg mb-4">ELO range</h1>
+            <div>
+              <div>
+                <span className="font-semibold text-xl">{stats.bestElo}</span>
+                <span className="font-light ml-2 text-sm">max</span>
+              </div>
+              <div>
+                <span className="font-semibold text-xl">{stats.worstElo}</span>
+                <span className="font-light ml-2 text-sm">max</span>
+              </div>
+            </div>
+          </Card>
+        ) : (
+          <Card className="w-full aspect-square p-3 flex justify-center items-center">
+            <Spinner variant="circle" />
+          </Card>
+        )}
+        {stats?.mostWinsAgainstName &&
+        stats?.mostWinsAgainstCount &&
+        stats?.mostLossesAgainstName &&
+        stats?.mostLossesAgainstCount ? (
+          <Card className="w-full aspect-square p-3">
+            <div className="flex flex-col justify-start items-center w-full h-full">
+              <p>Most wins against</p>
+              <p className="font-semibold text-lg">
+                {stats.mostWinsAgainstName} ({stats.mostWinsAgainstCount})
+              </p>
+              <br />
+              <p>Most loses against</p>
+              <p className="font-semibold text-lg">
+                {stats.mostLossesAgainstName} ({stats.mostLossesAgainstCount})
+              </p>
+            </div>
+          </Card>
+        ) : (
+          <Card className="w-full aspect-square p-3 flex justify-center items-center">
+            <Spinner variant="circle" />
+          </Card>
+        )}
+        {stats?.gamesPlayed && stats?.percentWon && stats?.percentLost ? (
+          <Card className="w-full aspect-square p-3 flex flex-col justify-between">
+            <div className="flex">
+              <p className="flex-1 flex aspect-square text-center items-center font-semibold text-5xl">
+                {stats.gamesPlayed}
+              </p>
+              <p className="flex-1 flex aspect-square text-center items-center text-sm">
+                Total rounds played
+              </p>
+            </div>
+            <div>
+              <div className="flex">
+                <p className="flex-1 flex text-center items-center justify-start">
+                  Win rate:
+                </p>
+                <p className="flex-1 flex text-center items-center justify-center font-semibold">
+                  {(stats.percentWon * 100).toFixed(1)}%
+                </p>
+              </div>
+              <div className="flex">
+                <p className="flex-1 flex text-center items-center justify-start">
+                  Lose rate:
+                </p>
+                <p className="flex-1 flex text-center items-center justify-center font-semibold">
+                  {(stats.percentLost * 100).toFixed(1)}%
+                </p>
+              </div>
+            </div>
+          </Card>
+        ) : (
+          <Card className="w-full aspect-square p-3 flex justify-center items-center">
+            <Spinner variant="circle" />
+          </Card>
+        )}
+      </div>
+      <div className="p-1 mt-5 border-t-2">
+        <Table className="table-fixed w-full">
+          <TableHeader>
+            <TableRow className="h-2">
+              <TableHead className="text-start w-[20%] h-5">Status</TableHead>
+              <TableHead className="text-start w-[40%] h-5">Opponent</TableHead>
+              <TableHead className="text-start w-[20%] h-5">Date</TableHead>
+              <TableHead className="text-start w-[20%] h-5">ELO</TableHead>
+            </TableRow>
+          </TableHeader>
+          {history?.length > 0 ? (
+            <TableBody>
+              {history.map((h) => {
+                return (
+                  <TableRow key={h.id} className="h-2">
+                    <TableCell
+                      className={
+                        "w-[20%] h-5 text-start font-semibold " +
+                        (h.winner_id === player
+                          ? "text-green-400"
+                          : "text-red-400")
+                      }
                     >
-                      <div
-                        className={`h-full w-2 rounded-2xl mr-2 ${
-                          h.won ? "bg-green-600" : "bg-red-600"
-                        }`}
-                      />
-                      <div className="h-full">
-                        <div>
-                          {h.won
-                            ? `Castigat contra ${h.opponent}`
-                            : `Pierdut contra ${h.opponent}`}
-                        </div>
-                        <div>ELO final: {h.elo}</div>
+                      <span>{h.winner_id === player ? "Won" : "Lost"}</span>
+                    </TableCell>
+                    <TableCell className="w-[40%] h-5 text-start font-semibold">
+                      {h.opponent}
+                    </TableCell>
+                    <TableCell className="w-[20%] h-5 text-start font-semibold">
+                      {formatDate(h.created_at)}
+                    </TableCell>
+                    <TableCell className="w-[20%] h-5 text-start font-semibold">
+                      {h.elo}
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          ) : (
+            <TableBody>
+              {Array.from({ length: 15 }).map((_, i) => {
+                return (
+                  <TableRow key={i} className="h-2">
+                    <TableCell className="w-[20%] h-5">
+                      <div className="w-full h-full py-5">
+                        <Skeleton className="w-full h-full" />
                       </div>
-                    </li>
-                  );
-                })}
-              </ul>
-            )}
-          </div>
+                    </TableCell>
+                    <TableCell className="w-[40%] h-5">
+                      <div className="w-full h-full py-5">
+                        <Skeleton className="w-full h-full" />
+                      </div>
+                    </TableCell>
+                    <TableCell className="w-[20%] h-5">
+                      <div className="w-full h-full py-5">
+                        <Skeleton className="w-full h-full" />
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          )}
+        </Table>
+        <div className="flex justify-between mt-4">
+          <Button
+            variant="secondary"
+            size="icon"
+            className="size-8"
+            disabled={history?.length === 0 || page <= 1}
+            onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+          >
+            <ChevronLeftIcon />
+          </Button>
+          <span>
+            Page {history?.length === 0 ? page ?? "1" : page} of{" "}
+            {history?.length === 0 ? totalPages ?? "..." : totalPages}
+          </span>
+          <Button
+            variant="secondary"
+            size="icon"
+            className="size-8"
+            disabled={history?.length === 0 || page >= totalPages}
+            onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
+          >
+            <ChevronRightIcon />
+          </Button>
         </div>
-      ) : (
-        <p>Loading...</p>
-      )}
+      </div>
     </div>
   );
 }

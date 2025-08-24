@@ -39,10 +39,11 @@ export async function signup(state, formData) {
 
   console.log(player);
 
-  if (player?.length > 0) errors.username.push("Username-ul exista deja");
+  if (player?.length > 0)
+    errors.username.push("The username is already taken.");
 
   if (formData.get("password") != formData.get("passwordConfirmation"))
-    errors.passwordConfirmation.push("Parola este diferita");
+    errors.passwordConfirmation.push("The passwords do not match.");
 
   if (!validationResults.success) {
     return {
@@ -72,7 +73,7 @@ export async function signup(state, formData) {
 
     const success = await createSession(newPlayer.id.toString());
 
-    if (!success) return { errors: { login: "Ceva nu a mers bine." } };
+    if (!success) return { errors: { login: "Something went wrong." } };
 
     return {
       message: "Log In successful!",
@@ -81,6 +82,6 @@ export async function signup(state, formData) {
     };
   } catch (error) {
     console.error("Database error:", error);
-    return { errors: { signup: "Ceva nu a mers bine." } };
+    return { errors: { signup: "Something went wrong" } };
   }
 }

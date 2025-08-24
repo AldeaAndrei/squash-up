@@ -50,7 +50,7 @@ export default function MenuButton() {
     <div className="relative inline-block" ref={menuRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="p-2 rounded-md focus:outline-none"
+        className="rounded-md focus:outline-none"
       >
         <MenuIcon />
       </button>

@@ -3,19 +3,19 @@ import { z } from "zod";
 export const SignupFormSchema = z.object({
   name: z
     .string()
-    .min(2, { message: "Numele trebuie sa aiba cel putin 2 caractere." })
+    .min(2, { message: "The name must have at least 2 characters." })
     .trim(),
   username: z
     .string()
-    .min(2, { message: "Username-ul trebuie sa aiba cel putin 2 caractere." })
+    .min(2, { message: "The username must have at least 2 characters." })
     .trim(),
   password: z
     .string()
-    .min(8, { message: "Trebuie sa aiba cel putin 8 caractere." })
-    .regex(/[a-zA-Z]/, { message: "Trebuie sa contina cel putin o litera." })
-    .regex(/[0-9]/, { message: "Trebuie sa contina cel putin un numar." })
+    .min(8, { message: "It must have at least 8 characters." })
+    .regex(/[a-zA-Z]/, { message: "It must contain at least one letter." })
+    .regex(/[0-9]/, { message: "It must contain at least one number." })
     .regex(/[^a-zA-Z0-9]/, {
-      message: "Trebuie sa contina cel putin un caracter special.",
+      message: "It must contain at least one special character.",
     })
     .trim(),
 });
@@ -23,9 +23,9 @@ export const SignupFormSchema = z.object({
 export const LoginFormSchema = z.object({
   username: z
     .string()
-    .min(2, { message: "Username-ul trebuie sa aiba cel putin 2 caractere." })
+    .min(2, { message: "The username must have at least 2 characters." })
     .trim(),
-  password: z.string().min(1, { message: "Parola nu este valida" }).trim(),
+  password: z.string().min(1, { message: "Password not valid" }).trim(),
 });
 
 export const FormState = {

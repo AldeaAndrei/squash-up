@@ -36,18 +36,18 @@ export async function login(state, formData) {
 
     if (!player)
       return {
-        errors: { login: "Nu exista jucator cu acest nume sau parola" },
+        errors: { login: "No player found!" },
       };
 
     const match = await bcrypt.compare(password, player.password);
     if (!match)
       return {
-        errors: { login: "Nu exista jucator cu acest nume sau parola" },
+        errors: { login: "No player found!" },
       };
 
     const success = await createSession(player.id.toString());
 
-    if (!success) return { errors: { login: "Ceva nu a mers bine." } };
+    if (!success) return { errors: { login: "Something went wrong!" } };
 
     return {
       message: "Log In successful!",
@@ -56,6 +56,6 @@ export async function login(state, formData) {
     };
   } catch (error) {
     console.error("Database error:", error);
-    return { errors: { login: "Ceva nu a mers bine." } };
+    return { errors: { login: "Something went wrong!" } };
   }
 }

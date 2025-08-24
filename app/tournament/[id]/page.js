@@ -1,17 +1,67 @@
-import GameList from "@/components/GameList";
-import NavBar from "@/components/NavBar";
+"use client";
 
-export default async function TournamentPage({ params }) {
-  const { id } = await params;
+import { useState, useEffect } from "react";
+import { useParams } from "next/navigation";
+import RoundCard from "@/components/v1/RoundCard";
+import {
+  Collapsible,
+  CollapsibleTrigger,
+  CollapsibleContent,
+} from "@/components/ui/collapsible";
+import { ChevronDown } from "lucide-react";
+
+export default function TournamentPage() {
+  const { id } = useParams();
+  const [tournament, setTournament] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [openSections, setOpenSections] = useState({});
+
+  useEffect(() => {
+    if (!id) return;
+
+    setLoading(true);
+    fetch(`/api/v1/tournaments/${id}`, { cache: "no-store" })
+      .then((res) => res.json())
+      .then((data) => {
+        setTournament(data.tournament);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, [id]);
+
+  if (loading) return <div className="p-2">Loading...</div>;
+  if (!tournament) return <div className="p-2">Tournament not found</div>;
+
+  const toggleSection = (index) => {
+    setOpenSections((prev) => ({ ...prev, [index]: !prev[index] }));
+  };
 
   return (
     <div className="p-2">
-      <section className="mt-2 mb-5">
-        <NavBar tournamentId={id} />
-      </section>
-      <section className="flex flex-col gap-2">
-        <GameList tournamentId={id} />
-      </section>
+      {tournament.games.map((game, index) => {
+        const isOpen = openSections[index] || false;
+        return (
+          // <Collapsible key={game.id} open={isOpen} className="py-2">
+          //   <CollapsibleTrigger onClick={() => toggleSection(index)}>
+          //     <div className="w-full p-1 flex justify-center items-center cursor-pointer">
+          //       <ChevronDown
+          //         className={`transition-transform ${
+          //           isOpen ? "rotate-180" : "rotate-0"
+          //         }`}
+          //       />
+          //       <p className="ml-2">Game {index + 1}</p>
+          //     </div>
+          //   </CollapsibleTrigger>
+          //   <CollapsibleContent>
+          <div>
+            {game.rounds.map((round) => (
+              <RoundCard key={round.id} round={round} />
+            ))}
+          </div>
+          //   </CollapsibleContent>
+          // </Collapsible>
+        );
+      })}
     </div>
   );
 }

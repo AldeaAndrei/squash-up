@@ -2,6 +2,14 @@
 
 import { START_ELO } from "@/constants";
 import { useEffect, useState } from "react";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 export default function PublicEloPage() {
   const [players, setPlayers] = useState([]);
@@ -11,9 +19,7 @@ export default function PublicEloPage() {
       try {
         const response = await fetch(`/api/statistics/public_elo`, {
           method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: { "Content-Type": "application/json" },
           cache: "no-store",
         });
 
@@ -27,66 +33,52 @@ export default function PublicEloPage() {
   }, []);
 
   return (
-    <div>
-      {players && players?.length > 0 && (
-        <ul>
-          <li className="flex flex-row items-center justify-between h-10">
-            <div className="flex-[1] border border-gray-700 px-1 h-full text-center flex items-center justify-center">
-              Loc
-            </div>
-            <div className="flex-[4] border border-gray-700 px-1 h-full text-center flex items-center justify-center">
-              Nume
-            </div>
-            <div className="flex-[2] border border-gray-700 px-1 h-full text-center flex items-center justify-center">
-              ELO
-            </div>
-            <div className="flex-[2] border border-gray-700 px-1 h-full text-center flex items-center justify-center">
-              % Castig
-            </div>
-          </li>
-          {players.map((player, index) => {
-            return (
-              <li
-                key={player.id}
-                className="flex flex-row items-center justify-between h-10"
+    <div className="overflow-x-auto">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead className="w-[5%] text-center">#</TableHead>
+            <TableHead className="w-[50%] text-left">Name</TableHead>
+            <TableHead className="w-[20%] text-center">ELO</TableHead>
+            <TableHead className="w-[20%] text-center">% Win</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {players.map((player, index) => (
+            <TableRow
+              key={player.id}
+              className="hover:bg-gray-100 dark:hover:bg-gray-800"
+            >
+              <TableCell className="text-center">{index + 1}</TableCell>
+              <TableCell className="font-semibold text-gray-900 dark:text-gray-100">
+                {player.name}
+              </TableCell>
+              <TableCell
+                className={`text-center font-semibold ${
+                  player.elo === START_ELO
+                    ? "text-gray-700 dark:text-gray-300"
+                    : player.elo < START_ELO
+                    ? "text-red-600 dark:text-red-500"
+                    : "text-green-600 dark:text-green-500"
+                }`}
               >
-                <div className="flex-[1] border border-gray-700 px-1 h-full text-center flex items-center justify-center">
-                  {index + 1}
-                </div>
-                <div className="flex-[4] border border-gray-700 px-1 h-full text-center flex items-center justify-start font-semibold">
-                  <span className="ml-1">{player.name}</span>
-                </div>
-                <div className="flex-[2] border border-gray-700 px-1 h-full text-center flex items-center justify-center font-semibold">
-                  <span
-                    className={
-                      player.elo === START_ELO
-                        ? "text-white"
-                        : player.elo < START_ELO
-                        ? "text-red-600"
-                        : "text-green-600"
-                    }
-                  >
-                    {player.elo}
-                  </span>
-                </div>
-                <div className="flex-[2] border border-gray-700 px-1 h-full text-center flex items-center justify-center font-semibold">
-                  <span
-                    className={
-                      player.win === 50
-                        ? "text-white"
-                        : player.win < 50
-                        ? "text-red-600"
-                        : "text-green-600"
-                    }
-                  >
-                    {player.win.toFixed(1)}%
-                  </span>
-                </div>
-              </li>
-            );
-          })}
-        </ul>
-      )}
+                {player.elo}
+              </TableCell>
+              <TableCell
+                className={`text-center font-semibold ${
+                  player.win === 50
+                    ? "text-gray-700 dark:text-gray-300"
+                    : player.win < 50
+                    ? "text-red-600 dark:text-red-500"
+                    : "text-green-600 dark:text-green-500"
+                }`}
+              >
+                {player.win.toFixed(1)}%
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
     </div>
   );
 }
