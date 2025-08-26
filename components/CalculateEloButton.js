@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { Button } from "./ui/button";
 
 export default function CalculateEloButton({ tournamentId, isDisabled }) {
   const [loading, setLoading] = useState(false);
@@ -36,8 +37,7 @@ export default function CalculateEloButton({ tournamentId, isDisabled }) {
   };
 
   return (
-    <button
-      className="bg-[#131313] hover:bg-[#1d1f1e] font-bold py-2 px-4 border border-[#292929] rounded"
+    <Button
       onClick={() => {
         calculateEloForTournament();
         router.refresh();
@@ -45,8 +45,8 @@ export default function CalculateEloButton({ tournamentId, isDisabled }) {
       disabled={isDisabled}
     >
       <div className="flex flex-row justify-center items-center w-32">
-        {loading ? "..." : "Calculeaza ELO"}
+        {loading ? "..." : "Calculate ELO"}
       </div>
-    </button>
+    </Button>
   );
 }

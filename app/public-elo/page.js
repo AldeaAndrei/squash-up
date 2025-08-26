@@ -10,9 +10,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useAuthStore } from "../store/authStore";
+import { useTheme } from "next-themes";
 
 export default function PublicEloPage() {
   const [players, setPlayers] = useState([]);
+  const { player, _logout } = useAuthStore();
+  const { theme } = useTheme();
 
   useEffect(() => {
     async function fetchPlayers() {
@@ -44,36 +48,36 @@ export default function PublicEloPage() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {players.map((player, index) => (
+          {players.map((p, index) => (
             <TableRow
-              key={player.id}
-              className="hover:bg-gray-100 dark:hover:bg-gray-800"
+              key={p.id}
+              className={player === p.id ? "bg-foreground/15" : ""}
             >
               <TableCell className="text-center">{index + 1}</TableCell>
               <TableCell className="font-semibold text-gray-900 dark:text-gray-100">
-                {player.name}
+                {p.name}
               </TableCell>
               <TableCell
                 className={`text-center font-semibold ${
-                  player.elo === START_ELO
+                  p.elo === START_ELO
                     ? "text-gray-700 dark:text-gray-300"
-                    : player.elo < START_ELO
-                    ? "text-red-600 dark:text-red-500"
-                    : "text-green-600 dark:text-green-500"
+                    : p.elo < START_ELO
+                    ? "text-red-600 dark:text-red-400"
+                    : "text-green-600 dark:text-green-400"
                 }`}
               >
-                {player.elo}
+                {p.elo}
               </TableCell>
               <TableCell
                 className={`text-center font-semibold ${
-                  player.win === 50
+                  p.win === 50
                     ? "text-gray-700 dark:text-gray-300"
-                    : player.win < 50
-                    ? "text-red-600 dark:text-red-500"
-                    : "text-green-600 dark:text-green-500"
+                    : p.win < 50
+                    ? "text-red-600 dark:text-red-400"
+                    : "text-green-600 dark:text-green-400"
                 }`}
               >
-                {player.win.toFixed(1)}%
+                {p.win.toFixed(1)}%
               </TableCell>
             </TableRow>
           ))}

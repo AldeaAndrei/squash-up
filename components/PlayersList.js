@@ -3,6 +3,26 @@
 import { useEffect, useState } from "react";
 import PlayersListElement from "./PlayerListElement";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
+import { Input } from "./ui/input";
+import { Button } from "./ui/button";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { CircleUserRound, X } from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "./ui/card";
+import SetGameTypeButton from "./SetGameTypeButton";
+import StartGameButton from "./StartGameButton";
 
 export default function PlayersList() {
   const [players, setPlayers] = useState([]);
@@ -111,56 +131,99 @@ export default function PlayersList() {
   };
 
   return (
-    <div>
+    <div className="flex flex-col justify-center items-start p-2 gap-10">
+      <div className="flex w-full">
+        <div className="flex-1">
+          <SetGameTypeButton />
+        </div>
+        <div className="flex-1">
+          <StartGameButton />
+        </div>
+      </div>
+      {similarPlayers?.length > 0 && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40" />
+      )}
       <div className="flex justify-between max-w-80 gap-4 mb-2">
-        <div className="flex justify-start">
-          <input
+        <div className="flex justify-start relative z-50">
+          <Input
             type="text"
             value={inputValue}
             onChange={(e) => handleChange(e)}
-            onKeyDown={handleKeyPress} // Calls function when Enter is pressed
+            onKeyDown={handleKeyPress}
             className={`border border-gray-300 p-2 rounded-lg focus:outline-none font-semibold focus:ring-2 focus:ring-blue-500 ${
-              isValidName ? "text-black" : "text-red-500"
+              isValidName ? "text-foreground" : "text-red-500"
             }`}
-            placeholder="Nume jucator..."
+            placeholder="Player name..."
           />
           {similarPlayers?.length > 0 && (
-            <ul className="bg-[#131313] mt-12 max-w-80 font-bold border border-[#292929] rounded flex flex-col gap-3 absolute w-full max-h-60 overflow-y-scroll">
-              {similarPlayers.map((player) => {
-                return (
-                  <li
+            <Card className="mt-3 absolute w-full max-h-60 overflow-y-scroll top-full z-50">
+              <CardHeader className="w-0 h-0 absolute sr-only">
+                <CardTitle className="sr-only">Player Search</CardTitle>
+                <CardDescription className="sr-only">
+                  Similar players by name
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="px-2 py-1">
+                {similarPlayers.map((player) => (
+                  <div
                     key={player.id}
-                    className="p-2 w-full bg-[#1d1f1e] border border-[#292929] rounded "
                     onClick={() => handleSubmit(player)}
+                    className="flex w-full justify-center items-center h-10"
                   >
-                    <div className="flex justify-between w-full">
-                      <div className="flex gap-2">
-                        <p>{player.name}</p>
-                      </div>
-                      <p className="ml-3 text-sm">{player.elo}</p>
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
+                    <p className="flex-1 text-start">{player.name}</p>
+                    <p className="flex-1 text-end">{player.elo}</p>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
           )}
         </div>
-        <button
-          className="hidden lg:block bg-[#131313] hover:bg-[#1d1f1e] font-bold py-2 px-4 border border-[#292929] rounded disabled:bg-[#5c5c5c]"
+        <Button
+          className="z-50"
           disabled={inputValue.length < 1}
           onClick={() => handleSubmit()}
+          variant="outline"
         >
-          Adauga
-        </button>
-        <button
-          className="block lg:hidden bg-[#131313] hover:bg-[#1d1f1e] font-bold py-2 px-4 border border-[#292929] rounded disabled:bg-[#5c5c5c]"
-          disabled={inputValue.length < 1}
-          onClick={() => handleSubmit()}
-        >
-          <AddCircleOutlineIcon />
-        </button>
+          Add
+        </Button>
       </div>
-      <ul className="overflow-scroll-y flex flex-col gap-2">
+      <Table className="table-fixed w-full">
+        <TableHeader>
+          <TableRow className="h-2">
+            <TableHead className="text-start w-[10%] h-5">#</TableHead>
+            <TableHead className="text-start w-[45%] h-5">Name</TableHead>
+            <TableHead className="text-start w-[45%] h-5"></TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {[...players].reverse().map((player, i) => (
+            <TableRow className="h-2" key={i}>
+              <TableCell className="text-start w-[10%] h-5">
+                {players.length - i}
+              </TableCell>
+              <TableCell className="text-start w-[45%] h-5">
+                {player.name}
+              </TableCell>
+              <TableCell className="text-start w-[45%] h-5">
+                <div className="flex w-full items-center justify-end">
+                  {/* TODO: Go to player profile */}
+                  <Button variant="ghost">
+                    <CircleUserRound />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    className="text-red-500"
+                    onClick={() => removePlayer(player.name, player.id)}
+                  >
+                    <X />
+                  </Button>
+                </div>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+      {/* <ul className="overflow-scroll-y flex flex-col gap-2">
         {players.map((player, index) => {
           return (
             <PlayersListElement
@@ -173,7 +236,7 @@ export default function PlayersList() {
             />
           );
         })}
-      </ul>
+      </ul> */}
     </div>
   );
 }

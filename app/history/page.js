@@ -68,10 +68,18 @@ export default function HistoryPage() {
                       </div>
                     </TableCell>
                     <TableCell className="text-center w-[50%] h-5">
-                      <Button variant="ghost" className="text-accent">
+                      <Button
+                        variant="ghost"
+                        className="text-accent"
+                        disabled={true}
+                      >
                         Delete
                       </Button>
-                      <Button className="text-accent" variant="ghost">
+                      <Button
+                        className="text-accent"
+                        variant="ghost"
+                        disabled={true}
+                      >
                         View
                       </Button>
                     </TableCell>
@@ -86,7 +94,11 @@ export default function HistoryPage() {
                       {formatDate(tournament.created_at)}
                     </TableCell>
                     <TableCell className="text-center w-[50%] h-5">
-                      <Button variant="ghost" className="text-red-600">
+                      <Button
+                        variant="ghost"
+                        className="text-red-600"
+                        disabled={true}
+                      >
                         Delete
                       </Button>
                       <Button

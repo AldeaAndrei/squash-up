@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Button } from "./ui/button";
 
 export default function SetGameTypeButton() {
   const [type, setType] = useState(3);
@@ -21,8 +22,8 @@ export default function SetGameTypeButton() {
   }, [type]);
 
   const parseGameType = () => {
-    if (type === 1) return "1 Runda";
-    if (type === 3) return "2/3 Runde";
+    if (type === 1) return "1 Round";
+    if (type === 3) return "Best 2 of 3 rounds";
   };
 
   const changeGameType = () => {
@@ -31,11 +32,8 @@ export default function SetGameTypeButton() {
   };
 
   return (
-    <button
-      className="bg-[#131313] hover:bg-[#1d1f1e] font-bold py-2 px-4 border border-[#292929] rounded"
-      onClick={() => changeGameType()}
-    >
+    <Button variant="outline" onClick={() => changeGameType()}>
       {parseGameType()}
-    </button>
+    </Button>
   );
 }
