@@ -1,5 +1,24 @@
 import prisma from "@/app/lib/prisma";
-import { safeJson } from "@/app/api/utils/json";
+
+function bigintToString(obj) {
+  if (obj === null || obj === undefined) return obj;
+
+  if (typeof obj === "bigint") {
+    return obj.toString();
+  }
+
+  if (Array.isArray(obj)) {
+    return obj.map(bigintToString);
+  }
+
+  if (typeof obj === "object") {
+    return Object.fromEntries(
+      Object.entries(obj).map(([key, value]) => [key, bigintToString(value)])
+    );
+  }
+
+  return obj;
+}
 
 export async function show(id) {
   const tournamentId = BigInt(id);
@@ -39,7 +58,7 @@ export async function show(id) {
 
   if (!tournament) return null;
 
-  return { data: tournament };
+  return { data: bigintToString(tournament) };
 }
 
 export async function index({ page = 1, perPage = 10 } = {}) {

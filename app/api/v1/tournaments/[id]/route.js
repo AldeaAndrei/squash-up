@@ -8,7 +8,7 @@ export async function GET(req, { params }) {
     const { data } = await show(id);
 
     return NextResponse.json(
-      { tournament: safeJson(data) },
+      { tournament: data },
       {
         status: 200,
         headers: {
