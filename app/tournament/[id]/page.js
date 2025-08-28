@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import RoundCard from "@/components/v1/RoundCard";
 import {
   Collapsible,
@@ -19,6 +19,8 @@ export default function TournamentPage() {
   const [isReadOnly, setIsReadOnly] = useState(true);
   const [roundsPlayed, setRoundsPlayed] = useState(0);
   const [roundsPlayedPercentage, setRoundsPlayedPercentage] = useState(0);
+  const [anyUsedInELO, setAnyUsedInELO] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     if (!id) return;
@@ -60,6 +62,8 @@ export default function TournamentPage() {
 
     tournament.games.forEach((game) => {
       (game.rounds || []).forEach((round) => {
+        if (round.used_for_elo === true) setAnyUsedInELO(true);
+
         totalRounds += 1;
         const sets = round.sets || [];
         const half = Math.ceil(sets.length / 2);
@@ -117,53 +121,69 @@ export default function TournamentPage() {
     setOpenSections((prev) => ({ ...prev, [index]: !prev[index] }));
   };
 
-  if (loading) return <div className="p-2">Loading...</div>;
-  if (!tournament) return <div className="p-2">Tournament not found</div>;
-
   return (
     <div className="p-2">
+      {anyUsedInELO && (
+        <div className="p-3 w-full flex-col font-thin">
+          <p>This tournament was used in ELO calculation.</p>
+          <p>The scores can no longer be edited.</p>
+          <br />
+          <p className="underline" onClick={() => router.push("/public-elo")}>
+            View the leaderboard
+          </p>
+        </div>
+      )}
       <div className="w-full h-12 flex">
         <div className="flex-1 w-full h-full flex justify-center items-center font-semibold">
-          {roundsPlayedPercentage}% Played
+          {loading ? 0 : roundsPlayedPercentage}% Played
         </div>
         <div className="flex-1 w-full h-full flex justify-center items-center">
-          {!isReadOnly && (
-            <CalculateEloButton tournamentId={id} isDisabled={isReadOnly} />
-          )}
+          <CalculateEloButton
+            tournamentId={id}
+            isDisabled={isReadOnly || loading}
+          />
         </div>
       </div>
-      <div>
-        {[...tournament?.games]
-          .sort((a, b) => Number(b.id) - Number(a.id))
-          .map((game, index) => {
-            const isOpen = openSections[index] || false;
-            return (
-              <Collapsible key={game.id} open={isOpen} className="py-2">
-                <CollapsibleTrigger onClick={() => toggleSection(index)}>
-                  <div className="w-full p-1 flex justify-center items-center cursor-pointer">
-                    <ChevronDown
-                      className={`transition-transform ${
-                        isOpen ? "rotate-180" : "rotate-0"
-                      }`}
-                    />
-                    <p className="ml-2">
-                      Game {tournament?.games?.length - index}
-                    </p>
-                  </div>
-                </CollapsibleTrigger>
-                <CollapsibleContent>
-                  <div>
-                    {[...game.rounds]
-                      .sort((a, b) => Number(a.id) - Number(b.id))
-                      .map((round) => (
-                        <RoundCard key={round.id} round={round} />
-                      ))}
-                  </div>
-                </CollapsibleContent>
-              </Collapsible>
-            );
-          })}
-      </div>
+      {!loading && tournament ? (
+        <div>
+          {[...tournament?.games]
+            .sort((a, b) => Number(b.id) - Number(a.id))
+            .map((game, index) => {
+              const isOpen = openSections[index] || false;
+              return (
+                <Collapsible key={game.id} open={isOpen} className="py-2">
+                  <CollapsibleTrigger onClick={() => toggleSection(index)}>
+                    <div className="w-full p-1 flex justify-center items-center cursor-pointer">
+                      <ChevronDown
+                        className={`transition-transform ${
+                          isOpen ? "rotate-180" : "rotate-0"
+                        }`}
+                      />
+                      <p className="ml-2">
+                        Game {tournament?.games?.length - index}
+                      </p>
+                    </div>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent>
+                    <div>
+                      {[...game.rounds]
+                        .sort((a, b) => Number(a.id) - Number(b.id))
+                        .map((round) => (
+                          <RoundCard
+                            key={round.id}
+                            round={round}
+                            anyUsedInELO={anyUsedInELO}
+                          />
+                        ))}
+                    </div>
+                  </CollapsibleContent>
+                </Collapsible>
+              );
+            })}
+        </div>
+      ) : (
+        <div></div>
+      )}
     </div>
   );
 }

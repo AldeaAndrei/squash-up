@@ -45,7 +45,7 @@ export default function CalculateEloButton({ tournamentId, isDisabled }) {
       disabled={isDisabled}
     >
       <div className="flex flex-row justify-center items-center w-32">
-        {loading ? "..." : "Calculate ELO"}
+        {loading ? "..." : isDisabled ? "Done" : "Calculate ELO"}
       </div>
     </Button>
   );

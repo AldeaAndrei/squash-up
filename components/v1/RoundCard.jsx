@@ -6,7 +6,7 @@ import { Skeleton } from "../ui/skeleton";
 import { useTheme } from "next-themes";
 import { CircleCheckBig, Save, Trophy } from "lucide-react";
 
-export default function RoundCard({ round }) {
+export default function RoundCard({ round, anyUsedInELO }) {
   const [scoreBySet, setScoreBySet] = useState({});
   const [colorsBySet, setColorsBySet] = useState({});
   const { theme } = useTheme();
@@ -117,25 +117,26 @@ export default function RoundCard({ round }) {
   };
 
   const updateSetApi = async (changes) => {
-    // try {
-    //   setLoadingSave(true);
-    //   const res = await fetch("/api/v1/sets", {
-    //     method: "PATCH",
-    //     headers: {
-    //       "Content-Type": "application/json",
-    //     },
-    //     body: JSON.stringify(changes),
-    //   });
-    //   if (!res.ok) {
-    //     throw new Error(`Failed with status ${res.status}`);
-    //   }
-    //   const data = await res.json();
-    //   setChanges({});
-    // } catch (error) {
-    //   console.error("Failed to update sets:", error);
-    // } finally {
-    //   setTimeout(() => setLoadingSave(false), 2000);
-    // }
+    if (anyUsedInELO === true) return;
+    try {
+      setLoadingSave(true);
+      const res = await fetch("/api/v1/sets", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(changes),
+      });
+      if (!res.ok) {
+        throw new Error(`Failed with status ${res.status}`);
+      }
+      const data = await res.json();
+      setChanges({});
+    } catch (error) {
+      console.error("Failed to update sets:", error);
+    } finally {
+      setTimeout(() => setLoadingSave(false), 2000);
+    }
   };
 
   useEffect(() => {
@@ -175,6 +176,7 @@ export default function RoundCard({ round }) {
                       type="number"
                       placeholder="0"
                       value={scoreBySet[set.id].player_1_score}
+                      disabled={anyUsedInELO}
                       onFocus={(e) => e.target.select()}
                       onChange={(e) => {
                         const valid = validateScore(e.target.value);
@@ -211,6 +213,7 @@ export default function RoundCard({ round }) {
                       type="number"
                       placeholder="0"
                       value={scoreBySet[set.id].player_2_score}
+                      disabled={anyUsedInELO}
                       onFocus={(e) => e.target.select()}
                       onChange={(e) => {
                         const valid = validateScore(e.target.value);
@@ -229,11 +232,18 @@ export default function RoundCard({ round }) {
         </div>
       </CardContent>
       <div className="h-5 w-full flex ml-5">
-        <span className="aspect-square h-3">
+        <span className="aspect-square h-3 w-3">
           {loadingSave && <Save className="w-full h-full animate-pulse" />}
         </span>
-        <span className="aspect-square h-3">
-          {round?.used_for_elo && <CircleCheckBig className="w-full h-full" />}
+        <span className="w-full ml-3">
+          {round?.used_for_elo && (
+            <div className="flex gap-1">
+              <CircleCheckBig className="w-3 h-3" />
+              <div className="w-full h-3 font-extralight text-sm flex items-center">
+                Used for ELO
+              </div>
+            </div>
+          )}
         </span>
       </div>
     </Card>

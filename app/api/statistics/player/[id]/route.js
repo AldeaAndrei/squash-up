@@ -2,6 +2,51 @@ import { validateId } from "@/app/api/utils/validations";
 import prisma from "@/app/lib/prisma";
 import { safeJson } from "@/app/api/utils/json";
 
+export async function scoreAnalysis(playerId) {
+  const rounds = await prisma.rounds.findMany({
+    where: {
+      OR: [
+        { player_1_id: BigInt(playerId) },
+        { player_2_id: BigInt(playerId) },
+      ],
+    },
+    include: {
+      sets: true,
+    },
+  });
+
+  const scores = rounds.flatMap((round) =>
+    round.sets.flatMap((set) => {
+      const isPlayer1 = round.player_1_id === BigInt(playerId);
+      const myScore = isPlayer1 ? set.player_1_score : set.player_2_score;
+      const opponentScore = isPlayer1 ? set.player_2_score : set.player_1_score;
+
+      // exclude 0–0, include 0 only if opponent ≠ 0
+      if (myScore === 0 && opponentScore === 0) {
+        return []; // skip
+      }
+      return [myScore];
+    })
+  );
+
+  // Build frequency distribution
+  const distribution = scores.reduce((acc, score) => {
+    acc[score] = (acc[score] || 0) + 1;
+    return acc;
+  }, {});
+
+  // Convert to chartData format
+  const chartData = Object.keys(distribution)
+    .map(Number)
+    .sort((a, b) => a - b)
+    .map((score) => ({
+      score,
+      count: distribution[score],
+    }));
+
+  return chartData;
+}
+
 export async function GET(req, { params }) {
   try {
     const { id } = await params;
@@ -75,6 +120,8 @@ export async function GET(req, { params }) {
       eloHistory[0]?.elo ?? 0n
     );
 
+    const scoreDistribution = await scoreAnalysis(id);
+
     const statistics = {
       mostWinsAgainstName: playerHash[mostFrequentNumber(wonAgainst).number],
       mostLossesAgainstName: playerHash[mostFrequentNumber(lostAgainst).number],
@@ -85,6 +132,7 @@ export async function GET(req, { params }) {
       percentLost: percentLost,
       bestElo: bestElo,
       worstElo: worstElo,
+      scoreDistribution: scoreDistribution,
     };
 
     return new Response(safeJson(statistics), {

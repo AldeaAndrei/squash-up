@@ -36,6 +36,8 @@ export default function Header() {
   const pathname = usePathname();
   const params = useParams();
 
+  const onTournamentPage = pathname.startsWith("/tournament");
+
   const handleLogout = async () => {
     const res = await fetch("/api/session", {
       method: "DELETE",
@@ -134,8 +136,8 @@ export default function Header() {
               <br />
               <li>
                 <Button variant="ghost" onClick={() => handleLogout()}>
-                  <Logout />
-                  Log Out
+                  <Logout className="text-red-600 dark:text-red-400" />
+                  <p className="text-red-600 dark:text-red-400">Log Out</p>
                 </Button>
               </li>
             </ul>

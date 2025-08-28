@@ -15,6 +15,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Spinner } from "@/components/ui/shadcn-io/spinner";
 import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ChartContainer, ChartConfig } from "@/components/ui/chart";
+import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis } from "recharts";
 
 export default function PlayerPage() {
   const { player } = useAuthStore();
@@ -23,6 +25,7 @@ export default function PlayerPage() {
   const [stats, setStats] = useState();
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(null);
+  const [isGraphOpen, setIsGraphOpen] = useState(false);
 
   async function fetchHistory() {
     if (!player) return;
@@ -78,98 +81,150 @@ export default function PlayerPage() {
     });
   };
 
+  const chartConfig = {
+    count: {
+      label: "Count",
+      color: "#2563eb",
+    },
+  };
+
   return (
     <div className="p-3">
-      <div className="grid grid-cols-2 grid-rows-2 w-full gap-3">
-        {playerData?.name && playerData?.elo ? (
-          <Card className="w-full aspect-square p-3">
-            <div>
-              <h1 className="text-lg mb-4">{playerData.name}</h1>
-              <div>
-                <span className="font-semibold text-xl">{playerData.elo}</span>
-                <span className="font-light ml-2 text-sm">ELO</span>
-              </div>
-            </div>
+      {playerData?.name && (
+        <h1 className="text-2xl w-full align-middle text-center mb-5">
+          {playerData.name}
+        </h1>
+      )}
+      <div
+        className={`transition-all duration-500 ease-in-out grid w-full gap-3 ${
+          isGraphOpen ? "grid-cols-1 grid-rows-1" : "grid-cols-2 grid-rows-2"
+        }`}
+      >
+        {stats?.scoreDistribution ? (
+          <Card
+            className="w-full aspect-square p-3"
+            onClick={() => setIsGraphOpen(!isGraphOpen)}
+          >
+            <ChartContainer config={chartConfig} className="w-full h-full pb-5">
+              {/* <ResponsiveContainer width="100%" height="90%"> */}
+              <BarChart data={stats?.scoreDistribution}>
+                <XAxis dataKey="score" />
+                {/* <YAxis /> */}
+                <Bar
+                  dataKey="count"
+                  fill="var(--color-count)"
+                  radius={2}
+                  isAnimationActive={false}
+                />
+              </BarChart>
+              {/* </ResponsiveContainer> */}
+              <h2 className="text-xs font-extralight text-center">
+                Score Distribution
+              </h2>
+            </ChartContainer>
           </Card>
         ) : (
           <Card className="w-full aspect-square p-3 flex justify-center items-center">
             <Spinner variant="circle" />
           </Card>
         )}
-        {stats?.bestElo && stats?.worstElo ? (
-          <Card className="w-full aspect-square p-3">
-            <h1 className="text-lg mb-4">ELO range</h1>
-            <div>
-              <div>
-                <span className="font-semibold text-xl">{stats.bestElo}</span>
-                <span className="font-light ml-2 text-sm">max</span>
-              </div>
-              <div>
-                <span className="font-semibold text-xl">{stats.worstElo}</span>
-                <span className="font-light ml-2 text-sm">max</span>
-              </div>
-            </div>
-          </Card>
-        ) : (
-          <Card className="w-full aspect-square p-3 flex justify-center items-center">
-            <Spinner variant="circle" />
-          </Card>
+        {!isGraphOpen && (
+          <>
+            {stats?.bestElo && stats?.worstElo && playerData?.elo ? (
+              <Card className="w-full aspect-square p-3">
+                <h1 className="text-lg mb-4">ELO range</h1>
+                <div>
+                  <div className="mb-1">
+                    <span className="font-semibold text-xl">
+                      {playerData.elo}
+                    </span>
+                    <span className="font-light ml-2 text-sm">current</span>
+                  </div>
+                  <div>
+                    <span className="font-semibold text-lg">
+                      {stats.bestElo}
+                    </span>
+                    <span className="font-light ml-2 text-sm">max</span>
+                  </div>
+                  <div>
+                    <span className="font-semibold text-lg">
+                      {stats.worstElo}
+                    </span>
+                    <span className="font-light ml-2 text-sm">min</span>
+                  </div>
+                </div>
+              </Card>
+            ) : (
+              <Card className="w-full aspect-square p-3 flex justify-center items-center">
+                <Spinner variant="circle" />
+              </Card>
+            )}
+          </>
         )}
-        {stats?.mostWinsAgainstName &&
-        stats?.mostWinsAgainstCount &&
-        stats?.mostLossesAgainstName &&
-        stats?.mostLossesAgainstCount ? (
-          <Card className="w-full aspect-square p-3">
-            <div className="flex flex-col justify-start items-center w-full h-full">
-              <p>Most wins against</p>
-              <p className="font-semibold text-lg">
-                {stats.mostWinsAgainstName} ({stats.mostWinsAgainstCount})
-              </p>
-              <br />
-              <p>Most loses against</p>
-              <p className="font-semibold text-lg">
-                {stats.mostLossesAgainstName} ({stats.mostLossesAgainstCount})
-              </p>
-            </div>
-          </Card>
-        ) : (
-          <Card className="w-full aspect-square p-3 flex justify-center items-center">
-            <Spinner variant="circle" />
-          </Card>
+        {!isGraphOpen && (
+          <>
+            {stats?.mostWinsAgainstName &&
+            stats?.mostWinsAgainstCount &&
+            stats?.mostLossesAgainstName &&
+            stats?.mostLossesAgainstCount ? (
+              <Card className="w-full aspect-square p-3">
+                <div className="flex flex-col justify-start items-center w-full h-full">
+                  <p>Most wins against</p>
+                  <p className="font-semibold text-lg">
+                    {stats.mostWinsAgainstName} ({stats.mostWinsAgainstCount})
+                  </p>
+                  <br />
+                  <p>Most loses against</p>
+                  <p className="font-semibold text-lg">
+                    {stats.mostLossesAgainstName} (
+                    {stats.mostLossesAgainstCount})
+                  </p>
+                </div>
+              </Card>
+            ) : (
+              <Card className="w-full aspect-square p-3 flex justify-center items-center">
+                <Spinner variant="circle" />
+              </Card>
+            )}
+          </>
         )}
-        {stats?.gamesPlayed && stats?.percentWon && stats?.percentLost ? (
-          <Card className="w-full aspect-square p-3 flex flex-col justify-between">
-            <div className="flex">
-              <p className="flex-1 flex aspect-square text-center items-center font-semibold text-5xl">
-                {stats.gamesPlayed}
-              </p>
-              <p className="flex-1 flex aspect-square text-center items-center text-sm">
-                Total rounds played
-              </p>
-            </div>
-            <div>
-              <div className="flex">
-                <p className="flex-1 flex text-center items-center justify-start">
-                  Win rate:
-                </p>
-                <p className="flex-1 flex text-center items-center justify-center font-semibold">
-                  {(stats.percentWon * 100).toFixed(1)}%
-                </p>
-              </div>
-              <div className="flex">
-                <p className="flex-1 flex text-center items-center justify-start">
-                  Lose rate:
-                </p>
-                <p className="flex-1 flex text-center items-center justify-center font-semibold">
-                  {(stats.percentLost * 100).toFixed(1)}%
-                </p>
-              </div>
-            </div>
-          </Card>
-        ) : (
-          <Card className="w-full aspect-square p-3 flex justify-center items-center">
-            <Spinner variant="circle" />
-          </Card>
+        {!isGraphOpen && (
+          <>
+            {stats?.gamesPlayed && stats?.percentWon && stats?.percentLost ? (
+              <Card className="w-full aspect-square p-3 flex flex-col justify-between">
+                <div className="flex">
+                  <p className="flex-1 flex aspect-square text-center items-center font-semibold text-5xl text-[#2563eb]">
+                    {stats.gamesPlayed}
+                  </p>
+                  <p className="flex-1 flex aspect-square text-center items-center text-sm">
+                    Total rounds played
+                  </p>
+                </div>
+                <div>
+                  <div className="flex">
+                    <p className="flex-1 flex text-center items-center justify-start">
+                      Win rate:
+                    </p>
+                    <p className="flex-1 flex text-center items-center justify-center font-semibold">
+                      {(stats.percentWon * 100).toFixed(1)}%
+                    </p>
+                  </div>
+                  <div className="flex">
+                    <p className="flex-1 flex text-center items-center justify-start">
+                      Lose rate:
+                    </p>
+                    <p className="flex-1 flex text-center items-center justify-center font-semibold">
+                      {(stats.percentLost * 100).toFixed(1)}%
+                    </p>
+                  </div>
+                </div>
+              </Card>
+            ) : (
+              <Card className="w-full aspect-square p-3 flex justify-center items-center">
+                <Spinner variant="circle" />
+              </Card>
+            )}
+          </>
         )}
       </div>
       <div className="p-1 mt-5 border-t-2">

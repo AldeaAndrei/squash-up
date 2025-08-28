@@ -20,7 +20,11 @@ export default function StartGameButton() {
   };
 
   return (
-    <Button variant="outline" onClick={() => generateGamesAndRedirect()}>
+    <Button
+      variant="outline"
+      className="bg-green-400 dark:bg-green-800"
+      onClick={() => generateGamesAndRedirect()}
+    >
       Start tournament
     </Button>
   );
