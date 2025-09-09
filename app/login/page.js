@@ -1,8 +1,8 @@
 "use client";
 
-import { useActionState, useEffect } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { login } from "./actions";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import {
   Card,
   CardContent,
@@ -17,8 +17,12 @@ import { Button } from "@/components/ui/button";
 export default function LoginPage() {
   const [state, action, pending] = useActionState(login, null);
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const redirect = searchParams.get("redirect") || "/start";
+  const [redirect, setRedirect] = useState("/start");
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    setRedirect(params.get("redirect") || "/start");
+  }, []);
 
   useEffect(() => {
     if (!pending && state?.success === true) {
