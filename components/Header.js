@@ -27,6 +27,7 @@ import {
 import { useAuthStore } from "@/app/store/authStore";
 import { Logout } from "@mui/icons-material";
 import { useState } from "react";
+import { addGameToTournament } from "@/app/utils/utils";
 
 export default function Header() {
   const router = useRouter();
@@ -37,6 +38,11 @@ export default function Header() {
   const params = useParams();
 
   const onTournamentPage = pathname.startsWith("/tournament");
+  let tournamentId = null;
+
+  if (onTournamentPage) {
+    tournamentId = params.id ? Number(params.id) : null;
+  }
 
   const handleLogout = async () => {
     const res = await fetch("/api/session", {
@@ -55,6 +61,21 @@ export default function Header() {
   const handleNavigate = (path) => {
     setIsOpen(false);
     router.push(path);
+  };
+
+  const addRoundAndRefresh = async () => {
+    if (!player || !tournamentId) return;
+
+    addGameToTournament(player, tournamentId).then((res) => {
+      const { id, error } = res;
+
+      console.log(id, error);
+
+      if (error) return;
+
+      router.push(`/tournament/${id}`);
+      window.location.reload();
+    });
   };
 
   return (
@@ -122,11 +143,12 @@ export default function Header() {
                   New Tournament
                 </Button>
               </li>
-              {pathname.startsWith("/tournament/") && params.id && (
+              {pathname.startsWith("/tournament/") && params.id && player && (
                 <li>
                   <Button
                     variant="ghost"
-                    onClick={() => handleNavigate("/start")}
+                    onClick={() => addRoundAndRefresh()}
+                    disabled={true}
                   >
                     <ClipboardPlus />
                     New Game
