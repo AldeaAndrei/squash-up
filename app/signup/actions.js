@@ -71,7 +71,7 @@ export async function signup(state, formData) {
       },
     });
 
-    const success = await createSession(newPlayer.id.toString());
+    const success = (await createSession(newPlayer.id.toString()))?.success;
 
     if (!success) return { errors: { login: "Something went wrong." } };
 

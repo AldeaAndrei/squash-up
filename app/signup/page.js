@@ -19,7 +19,7 @@ export default function LoginPage() {
   const router = useRouter();
 
   useEffect(() => {
-    if (!pending && state?.success.success === true) {
+    if (!pending && state?.success === true) {
       router.push("/start");
     }
   }, [state, pending]);

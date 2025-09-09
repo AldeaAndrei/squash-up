@@ -45,7 +45,7 @@ export async function login(state, formData) {
         errors: { login: "No player found!" },
       };
 
-    const success = await createSession(player.id.toString());
+    const success = (await createSession(player.id.toString()))?.success;
 
     if (!success) return { errors: { login: "Something went wrong!" } };
 
