@@ -37,8 +37,6 @@ export async function signup(state, formData) {
     },
   });
 
-  console.log(player);
-
   if (player?.length > 0)
     errors.username.push("The username is already taken.");
 

@@ -103,8 +103,6 @@ export async function GET(req, { params }) {
       skipDuplicates: true,
     });
 
-    console.log(eloHistories);
-
     return new NextResponse(safeJson({ eloChangeData }, { status: 200 }));
   } catch (err) {
     console.error(err);

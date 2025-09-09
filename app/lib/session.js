@@ -25,11 +25,11 @@ export async function decrypt(session) {
     });
 
     const end = performance.now();
-    console.log(`>>>>> decrypt: ${Math.round(end - start)}ms`);
+    // console.log(`>>>>> decrypt: ${Math.round(end - start)}ms`);
     return payload;
   } catch (error) {
     const end = performance.now();
-    console.log(`>>>>> decrypt (failed): ${Math.round(end - start)}ms`);
+    // console.log(`>>>>> decrypt (failed): ${Math.round(end - start)}ms`);
     return null;
   }
 }

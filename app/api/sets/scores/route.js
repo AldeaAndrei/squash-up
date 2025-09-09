@@ -21,7 +21,6 @@ export async function POST(request) {
       updatedIds.push(updated.id.toString());
     }
 
-    console.log(updatedIds);
     return new NextResponse(safeJson({ updatedIds }, { status: 200 }));
   } catch (error) {
     console.error(error);
