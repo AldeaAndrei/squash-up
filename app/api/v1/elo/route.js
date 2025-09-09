@@ -7,8 +7,14 @@ export async function GET(req) {
     const page = parseInt(url.searchParams.get("page")) || 1;
     const perPage = parseInt(url.searchParams.get("perPage")) || 10;
     const playerId = parseInt(url.searchParams.get("playerId"));
+    const opponentId = parseInt(url.searchParams.get("opponent"));
 
-    const { data, pagination } = await index({ page, perPage, playerId });
+    const { data, pagination } = await index({
+      page,
+      perPage,
+      playerId,
+      opponentId,
+    });
 
     return NextResponse.json(
       { eloHistory: data, pagination },

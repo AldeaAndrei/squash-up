@@ -1,12 +1,25 @@
 import prisma from "@/app/lib/prisma";
 
-export async function index({ page = 1, perPage = 10, playerId = null } = {}) {
+export async function index({
+  page = 1,
+  perPage = 10,
+  playerId = null,
+  opponentId = null,
+} = {}) {
   const skip = (page - 1) * perPage;
   const take = perPage;
 
-  const where = playerId ? { player_id: playerId } : {};
+  let where = {};
 
-  const [records, total] = await Promise.all([
+  if (playerId) {
+    where.player_id = playerId;
+  }
+
+  if (opponentId) {
+    where.OR = [{ winner_id: opponentId }, { loser_id: opponentId }];
+  }
+
+  let [records, total] = await Promise.all([
     prisma.elo_histories.findMany({
       skip,
       take,
@@ -46,8 +59,9 @@ export async function index({ page = 1, perPage = 10, playerId = null } = {}) {
 
   const playerMap = new Map(players.map((p) => [p.id.toString(), p.name]));
 
-  const data = records.map((r) => {
+  let data = records.map((r) => {
     let opponent = null;
+    let opponentId = null;
 
     if (playerId != null) {
       const winnerId = r.winner_id?.toString();
@@ -56,8 +70,10 @@ export async function index({ page = 1, perPage = 10, playerId = null } = {}) {
 
       if (winnerId === playerIdStr) {
         opponent = playerMap.get(loserId) || null;
+        opponentId = loserId;
       } else if (loserId === playerIdStr) {
         opponent = playerMap.get(winnerId) || null;
+        opponentId = winnerId;
       }
     }
 
@@ -68,8 +84,19 @@ export async function index({ page = 1, perPage = 10, playerId = null } = {}) {
       elo: r.elo?.toString(),
       created_at: r.created_at,
       opponent,
+      opponentId,
     };
   });
+
+  if (
+    opponentId !== undefined &&
+    opponentId !== null &&
+    opponentId !== "" &&
+    !Number.isNaN(opponentId)
+  ) {
+    const opponentIdStr = String(opponentId);
+    data = data.filter((d) => String(d.opponentId) === opponentIdStr);
+  }
 
   return {
     data,

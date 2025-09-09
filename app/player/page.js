@@ -2,7 +2,13 @@
 
 import { useState, useEffect } from "react";
 import { useAuthStore } from "../store/authStore";
-import { Card } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -17,6 +23,7 @@ import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ChartContainer, ChartConfig } from "@/components/ui/chart";
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis } from "recharts";
+import { Input } from "@/components/ui/input";
 
 export default function PlayerPage() {
   const { player } = useAuthStore();
@@ -26,21 +33,66 @@ export default function PlayerPage() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(null);
   const [isGraphOpen, setIsGraphOpen] = useState(false);
+  const [searchedPlayerName, setSearchedPlayerName] = useState(null);
+  const [similarPlayers, setSimilarPlayers] = useState([]);
+  const [selectedPlayer, setSelectedPlayer] = useState(null);
+  const [selectedPlayerName, setSelectedPlayerName] = useState(null);
 
   async function fetchHistory() {
     if (!player) return;
 
-    const res = await fetch(
-      `/api/v1/elo?page=${page}&perPage=10&playerId=${player}`,
-      {
-        cache: "no-store",
-      }
-    );
+    let path = `/api/v1/elo?page=${page}&perPage=10&playerId=${player}`;
+
+    if (selectedPlayer) {
+      path += `&opponent=${selectedPlayer}`;
+    }
+
+    const res = await fetch(path, {
+      cache: "no-store",
+    });
     const data = await res.json();
 
     setHistory(data.eloHistory);
     setTotalPages(data.pagination.totalPages || 1);
   }
+
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      async function fetchPlayers() {
+        try {
+          const response = await fetch(
+            `/api/players?name=${encodeURIComponent(searchedPlayerName)}`,
+            {
+              method: "GET",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              cache: "no-store",
+            }
+          );
+
+          let playersFetched = await response.json();
+
+          playersFetched = playersFetched.filter(
+            (fetchedPlayer) =>
+              player !== fetchedPlayer.id && selectedPlayer !== fetchedPlayer.id
+          );
+
+          setSimilarPlayers(playersFetched);
+        } catch (error) {
+          console.error("Error fetching players:", error);
+        }
+      }
+
+      if (searchedPlayerName?.length === 0) setSimilarPlayers([]);
+
+      if (searchedPlayerName && searchedPlayerName?.length > 2) {
+        fetchPlayers();
+      }
+    }, 250);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchedPlayerName]);
 
   useEffect(() => {
     async function fetchPlayer() {
@@ -71,6 +123,20 @@ export default function PlayerPage() {
   useEffect(() => {
     fetchHistory();
   }, [page]);
+
+  useEffect(() => {
+    fetchHistory();
+
+    setSearchedPlayerName(null);
+    setSimilarPlayers([]);
+  }, [selectedPlayer]);
+
+  const clearSearchedPlayers = () => {
+    setSearchedPlayerName(null);
+    setSimilarPlayers([]);
+    setSelectedPlayer(null);
+    setSelectedPlayerName(null);
+  };
 
   const formatDate = (isoString) => {
     const date = new Date(isoString);
@@ -225,6 +291,58 @@ export default function PlayerPage() {
               </Card>
             )}
           </>
+        )}
+      </div>
+      <div className="justify-start relative z-50 mt-10 p-2">
+        <p className="p-1">Filter</p>
+        {selectedPlayerName && (
+          <div className="flex w-full h-full justify-between items-center">
+            <p>Compare with: {selectedPlayerName}</p>
+            <Button
+              variant="destructive"
+              onClick={() => clearSearchedPlayers()}
+            >
+              Reset
+            </Button>
+          </div>
+        )}
+        {!selectedPlayer && !selectedPlayerName && (
+          <Input
+            className="z-50"
+            type="text"
+            value={selectedPlayerName ?? searchedPlayerName ?? ""}
+            onChange={(e) => setSearchedPlayerName(e.target.value)}
+            disabled={selectedPlayerName != null}
+            placeholder="Search player..."
+          />
+        )}
+        {similarPlayers?.length > 0 && (
+          <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40" />
+        )}
+        {similarPlayers?.length > 0 && (
+          <Card className="mt-3 absolute w-full max-h-60 overflow-y-scroll top-full z-50">
+            <CardHeader className="w-0 h-0 absolute sr-only">
+              <CardTitle className="sr-only">Player Search</CardTitle>
+              <CardDescription className="sr-only">
+                Similar players by name
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="px-2 py-1">
+              {similarPlayers.map((player) => (
+                <div
+                  key={player.id}
+                  onClick={() => {
+                    setSelectedPlayer(player.id);
+                    setSelectedPlayerName(player.name);
+                  }}
+                  className="flex w-full justify-center items-center h-10"
+                >
+                  <p className="flex-1 text-start">{player.name}</p>
+                  <p className="flex-1 text-end">{player.elo}</p>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
         )}
       </div>
       <div className="p-1 mt-5 border-t-2">
