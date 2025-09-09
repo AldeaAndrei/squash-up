@@ -26,8 +26,10 @@ export async function update(sets) {
 
   for (const [idStr, s] of entries) {
     ids.push(BigInt(idStr)); // ids are BigInt in schema
-    p1s.push(normalizeScore(s?.player_1_score));
-    p2s.push(normalizeScore(s?.player_2_score));
+
+    // push null if score not provided
+    p1s.push(s?.player_1_score !== undefined ? normalizeScore(s.player_1_score) : null);
+    p2s.push(s?.player_2_score !== undefined ? normalizeScore(s.player_2_score) : null);
   }
 
   const updated = await prisma.$queryRaw`
@@ -38,8 +40,9 @@ export async function update(sets) {
         unnest(${p2s}::int[])    AS p2
     )
     UPDATE "sets" s
-    SET "player_1_score" = d.p1,
-        "player_2_score" = d.p2
+    SET
+      "player_1_score" = COALESCE(d.p1, s.player_1_score),
+      "player_2_score" = COALESCE(d.p2, s.player_2_score)
     FROM data d
     WHERE s.id = d.id
     RETURNING s.id, s.player_1_score, s.player_2_score;
