@@ -1,12 +1,9 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 
-// 1. Specify protected and public routes
 const protectedRoutes = ["/start", "/history", "/player", "/tournament"];
-// const publicRoutes = ["/login", "/signup", "/", "public-elo"];
 
 export default async function middleware(req) {
-  // 2. Check if the current route is protected or public
   const path = req.nextUrl.pathname;
   const isProtectedRoute = protectedRoutes.some((route) =>
     path.startsWith(route)
@@ -14,17 +11,13 @@ export default async function middleware(req) {
 
   if (!isProtectedRoute) return NextResponse.next();
 
-  // const isPublicRoute = publicRoutes.includes(path);
-
-  // 3. Get the session cookie
   const sessionCookie = (await cookies()).get("session")?.value;
 
-  // 4. Redirect
   if (isProtectedRoute && !sessionCookie) {
-    const res = NextResponse.redirect(new URL("/login", req.nextUrl));
-    return res;
+    const loginUrl = new URL("/login", req.nextUrl);
+    loginUrl.searchParams.set("redirect", path); // preserve original page
+    return NextResponse.redirect(loginUrl);
   }
 
-  const res = NextResponse.next();
-  return res;
+  return NextResponse.next();
 }

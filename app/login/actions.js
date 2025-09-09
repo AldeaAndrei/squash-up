@@ -25,34 +25,23 @@ export async function login(state, formData) {
 
   try {
     const player = await prisma.players.findUnique({
-      where: {
-        username: username,
-      },
-      select: {
-        id: true,
-        password: true,
-      },
+      where: { username },
+      select: { id: true, password: true },
     });
 
-    if (!player)
-      return {
-        errors: { login: "No player found!" },
-      };
+    if (!player) return { errors: { login: "No player found!" } };
 
     const match = await bcrypt.compare(password, player.password);
-    if (!match)
-      return {
-        errors: { login: "No player found!" },
-      };
+    if (!match) return { errors: { login: "No player found!" } };
 
     const success = (await createSession(player.id.toString()))?.success;
-
     if (!success) return { errors: { login: "Something went wrong!" } };
 
     return {
       message: "Log In successful!",
       playerId: player.id.toString(),
       success,
+      redirectTo: formData.get("redirect") || "/start",
     };
   } catch (error) {
     console.error("Database error:", error);

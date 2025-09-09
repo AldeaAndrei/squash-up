@@ -31,10 +31,7 @@ export default function LoginPage() {
         <CardDescription></CardDescription>
       </CardHeader>
       <CardContent>
-        <form
-          // className="w-80 bg-[#ffffff05] rounded-xl border-[#0000005b] border-2 mx-auto mt-10"
-          action={action}
-        >
+        <form action={action}>
           <div className="flex flex-col justify-start items-center gap-4 w-full">
             <Label htmlFor="name" className="w-full">
               Name
@@ -67,6 +64,8 @@ export default function LoginPage() {
               type="text"
               placeholder="ionelpopescu69"
               defaultValue={state?.fields?.username || ""}
+              autoCapitalize="none"
+              autoCorrect="off"
             />
             {state?.errors?.username && (
               <ul className="w-full text-red-400">
@@ -83,7 +82,13 @@ export default function LoginPage() {
             <Label htmlFor="password" className="w-full">
               Parola
             </Label>
-            <Input id="password" name="password" type="password" />
+            <Input
+              id="password"
+              name="password"
+              type="password"
+              autoCapitalize="none"
+              autoCorrect="off"
+            />
             {state?.errors?.password && (
               <ul className="w-full text-red-400">
                 {state.errors.password.map((e) => {
@@ -103,6 +108,8 @@ export default function LoginPage() {
               id="passwordConfirmation"
               name="passwordConfirmation"
               type="password"
+              autoCapitalize="none"
+              autoCorrect="off"
             />
             {state?.errors?.passwordConfirmation && (
               <ul className="w-full text-red-400">

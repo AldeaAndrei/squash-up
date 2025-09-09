@@ -2,7 +2,7 @@
 
 import { useActionState, useEffect } from "react";
 import { login } from "./actions";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   Card,
   CardContent,
@@ -17,12 +17,14 @@ import { Button } from "@/components/ui/button";
 export default function LoginPage() {
   const [state, action, pending] = useActionState(login, null);
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirect = searchParams.get("redirect") || "/start";
 
   useEffect(() => {
     if (!pending && state?.success === true) {
-      router.push("/start");
+      router.push(state.redirectTo);
     }
-  }, [state, pending]);
+  }, [state, pending, router]);
 
   return (
     <Card className="w-80 mx-auto mt-10">
@@ -34,6 +36,7 @@ export default function LoginPage() {
       </CardHeader>
       <CardContent>
         <form action={action}>
+          <input type="hidden" name="redirect" value={redirect} />
           <div className="flex flex-col justify-start items-center gap-4 w-full">
             <Label htmlFor="username" className="w-full">
               Username
@@ -44,33 +47,37 @@ export default function LoginPage() {
               type="text"
               placeholder="ionelpopescu69"
               defaultValue={state?.fields?.username || ""}
+              autoCapitalize="none"
+              autoCorrect="off"
             />
             {state?.errors?.username && (
               <ul className="w-full text-red-400">
-                {state.errors.username.map((e) => {
-                  return (
-                    <li className="text-start align-middle">
-                      <span>- </span>
-                      {e}
-                    </li>
-                  );
-                })}
+                {state.errors.username.map((e, i) => (
+                  <li key={i} className="text-start align-middle">
+                    <span>- </span>
+                    {e}
+                  </li>
+                ))}
               </ul>
             )}
             <Label htmlFor="password" className="w-full">
               Password
             </Label>
-            <Input id="password" name="password" type="password" />
+            <Input
+              id="password"
+              name="password"
+              type="password"
+              autoCapitalize="none"
+              autoCorrect="off"
+            />
             {state?.errors?.password && (
               <ul className="w-full text-red-400">
-                {state.errors.password.map((e) => {
-                  return (
-                    <li className="text-start align-middle">
-                      <span>- </span>
-                      {e}
-                    </li>
-                  );
-                })}
+                {state.errors.password.map((e, i) => (
+                  <li key={i} className="text-start align-middle">
+                    <span>- </span>
+                    {e}
+                  </li>
+                ))}
               </ul>
             )}
             <div>
