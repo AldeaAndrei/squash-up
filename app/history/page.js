@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
+import ConfirmationModal from "@/components/v1/ConfirmationModal";
 
 export default function HistoryPage() {
   const [tournaments, setTournaments] = useState([]);
@@ -20,6 +21,8 @@ export default function HistoryPage() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(null);
   const router = useRouter();
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [tournamentToDelete, setTournamentToDelete] = useState(null);
 
   const formatDate = (isoString) => {
     const date = new Date(isoString);
@@ -29,6 +32,46 @@ export default function HistoryPage() {
       year: "numeric",
     });
   };
+
+  const handleClose = () => {
+    setIsDeleteModalOpen(false);
+    setTournamentToDelete(null);
+  };
+
+  const handleDelete = (tournamentId) => {
+    setTournamentToDelete(tournamentId);
+    setIsDeleteModalOpen(true);
+  };
+
+  // const deleteTournamentAndReload = (tournamentId) => {
+  //   const deleteTournament = async () => {
+  //     try {
+  //       const response = await fetch(`/api/tournaments/${tournamentId}`, {
+  //         method: "DELETE",
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //         },
+  //       });
+
+  //       if (!response.ok) {
+  //         throw new Error("Error deleting tournament");
+  //       }
+
+  //       return await response.json();
+  //     } catch (error) {
+  //       console.error("Error deleting tournament", error);
+  //       return null;
+  //     }
+  //   };
+
+  //   deleteTournament()
+  //     .then(() => {
+  //       router.refresh();
+  //     })
+  //     .finally(() => {
+  //       handleClose();
+  //     });
+  // };
 
   useEffect(() => {
     setLoading(true);
@@ -97,7 +140,8 @@ export default function HistoryPage() {
                       <Button
                         variant="ghost"
                         className="text-red-600"
-                        disabled={true}
+                        disabled={loading}
+                        onClick={() => handleDelete(tournament.id)}
                       >
                         Delete
                       </Button>
@@ -139,6 +183,17 @@ export default function HistoryPage() {
           </Button>
         </div>
       </section>
+      {isDeleteModalOpen && (
+        <ConfirmationModal
+          title={`Delete tournament #${tournamentToDelete}`}
+          description={
+            "This action will delete the tournament and cannot be undone."
+          }
+          confirmAction={handleClose}
+          closeAction={handleClose}
+          loading={loading}
+        />
+      )}
     </div>
   );
 }
