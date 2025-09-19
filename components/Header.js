@@ -28,6 +28,7 @@ import { useAuthStore } from "@/app/store/authStore";
 import { Logout } from "@mui/icons-material";
 import { useState } from "react";
 import { addGameToTournament } from "@/app/utils/utils";
+import WaitingModal from "./v1/WaitingModal";
 
 export default function Header() {
   const router = useRouter();
@@ -36,6 +37,8 @@ export default function Header() {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
   const params = useParams();
+
+  const [loading, setLoading] = useState(false);
 
   const onTournamentPage = pathname.startsWith("/tournament");
   let tournamentId = null;
@@ -66,7 +69,11 @@ export default function Header() {
   const addRoundAndRefresh = async () => {
     if (!player || !tournamentId) return;
 
-    addGameToTournament(player, tournamentId).then((res) => {
+    setLoading(true);
+    setIsOpen(false);
+
+    try {
+      const res = await addGameToTournament(player, tournamentId);
       const { id, error } = res;
 
       console.log(id, error);
@@ -75,7 +82,11 @@ export default function Header() {
 
       router.push(`/tournament/${id}`);
       window.location.reload();
-    });
+    } catch (err) {
+      console.error("Error adding round:", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -145,11 +156,7 @@ export default function Header() {
               </li>
               {pathname.startsWith("/tournament/") && params.id && player && (
                 <li>
-                  <Button
-                    variant="ghost"
-                    onClick={() => addRoundAndRefresh()}
-                    disabled={true}
-                  >
+                  <Button variant="ghost" onClick={() => addRoundAndRefresh()}>
                     <ClipboardPlus />
                     New Game
                   </Button>
@@ -198,6 +205,7 @@ export default function Header() {
           )}
         </SheetContent>
       </Sheet>
+      {loading && <WaitingModal title={`Just a moment...`} />}
     </header>
   );
 }

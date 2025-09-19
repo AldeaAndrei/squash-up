@@ -36,6 +36,14 @@ export default function TournamentPage() {
 
         setTournament(data.tournament);
 
+        const players = data.tournament.players.map((p, index) => ({
+          id: index,
+          database_id: p.id,
+          name: p.name,
+        }));
+
+        localStorage.setItem("players", JSON.stringify(players));
+
         initOpenSections(data.tournament);
         checkReadOnly(data.tournament);
         analyzeRounds(data.tournament);

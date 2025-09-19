@@ -33,7 +33,7 @@ export async function show(id) {
         select: {
           id: true,
           created_at: true,
-          played_by: true,
+          played_by: false, // Ignore
           rounds: {
             select: {
               id: true,
@@ -58,7 +58,33 @@ export async function show(id) {
 
   if (!tournament) return null;
 
-  return { data: bigintToString(tournament) };
+  const playerMap = new Map();
+
+  tournament.games.forEach((game) => {
+    game.rounds.forEach((round) => {
+      if (round.player_1_id && round.player_1_name) {
+        playerMap.set(round.player_1_id.toString(), {
+          id: round.player_1_id.toString(),
+          name: round.player_1_name,
+        });
+      }
+      if (round.player_2_id && round.player_2_name) {
+        playerMap.set(round.player_2_id.toString(), {
+          id: round.player_2_id.toString(),
+          name: round.player_2_name,
+        });
+      }
+    });
+  });
+
+  const players = Array.from(playerMap.values());
+
+  return {
+    data: {
+      ...bigintToString(tournament),
+      players,
+    },
+  };
 }
 
 export async function index({ page = 1, perPage = 10 } = {}) {
