@@ -41,7 +41,7 @@ export default function CalculateEloButton({ tournamentId, isDisabled }) {
   const handleCalculateElo = async () => {
     try {
       await calculateEloForTournament();
-      window.location.reload();
+      router.push(window.location.pathname);
     } catch (err) {
       console.error("Failed to calculate ELO:", err);
     } finally {
