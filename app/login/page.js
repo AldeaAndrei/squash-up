@@ -13,6 +13,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import WaitingModal from "@/components/v1/WaitingModal";
 
 export default function LoginPage() {
   const [state, action, pending] = useActionState(login, null);
@@ -102,6 +103,7 @@ export default function LoginPage() {
           </div>
         </form>
       </CardContent>
+      {pending && <WaitingModal title={`Just a moment...`} />}
     </Card>
   );
 }
