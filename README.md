@@ -4,6 +4,21 @@
 
 This project is a Tournament Management System that allows users to create and manage squash tournaments. It includes functionalities for managing players, games, and ELO ranking. The system is designed to provide flexibility for different types of tournaments with multiple games per tournament and multiple game modes (1 set per round or best 2 out of 3).
 
+## How to use
+
+- Login or create an account using the signup page.
+- After login you will be redirected to the tournament creation page, where you need to select the players for the tournament and press 'Start'.
+  The number of rounds can be selected as well (1 round or 3, where 2 best ot of 3 win the round).
+- The system will generate a 'Game' (a subdivision of a tournament) with all the matches, every player will compete against every other player.
+- The score must be written in the generated form, after 2 seconds of inactivity the score will be automaticaly saved in the DB.
+- At the end of the game, when all the rounds are played, a new game can be generated from the sidebar.
+  The new game is part of the current tournament and contains the same players with new rounds to be played, but generated in a diffrent order.
+- At the end of the tourament, the calculate elo button can be pressed and the leaderboard will be updated.
+- From the sidebar, a user can navigate to the:
+  -- Leaderboard
+  -- New tournament page
+  -- Profile
+  
 ## Features
 
 - **Tournament Creation**: Create a new tournament with a list of players.
