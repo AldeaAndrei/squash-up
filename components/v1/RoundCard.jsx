@@ -146,7 +146,7 @@ export default function RoundCard({ round, anyUsedInELO }) {
 
     debounceRef.current = setTimeout(() => {
       updateSetApi(changes);
-    }, 2000);
+    }, 100);
 
     return () => clearTimeout(debounceRef.current);
   }, [changes]);
